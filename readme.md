@@ -46,12 +46,17 @@ Two things happen, for two different reasons:
 ### A visible end to each reply
 Every AI message now ends with a small footer: a **Copy** button (copies the raw text/markdown to your clipboard, with a "Copied ✓" confirmation) and a timestamp — so a finished response reads as finished instead of just trailing off.
 
-### Web research (Wikipedia + DuckDuckGo + Wikimedia Commons)
-Tap the **🌐 Web search** chip above the composer to turn it on for your next messages (tap again to turn off). While it's active, sending a message also:
-- Pulls a short summary from **Wikipedia**'s API and an instant-answer snippet from **DuckDuckGo**'s API, feeds both into RiNi's context so it can answer using real, current information, and lists them as tappable **source chips** under the reply.
+### Web research (Puter's live web_search tool + Wikipedia + DuckDuckGo + Wikimedia Commons)
+Tap the **🌐 Web search** chip above the composer to turn it on for your next messages (tap again to turn off). While it's active, sending a message does several things at once:
+- Switches the AI call to an OpenAI model (`openai/gpt-5.6-luna`) with Puter.js's built-in **`web_search` tool** turned on (`tools: [{type:"web_search"}]`), so RiNi can actually browse the live web itself when it decides a question needs current information — Puter/OpenAI handle the search server-side, no extra code needed on your end.
+- Also pulls a short summary from **Wikipedia**'s API and an instant-answer snippet from **DuckDuckGo**'s API as extra grounding context, and lists both as tappable **source chips** under the reply — since the built-in tool only returns text, not photos.
 - Pulls matching photos from **Wikimedia Commons** and shows them as a horizontally scrollable strip under the reply. Tap any thumbnail to open a full-width, swipeable **lightbox** viewer.
 
-All three are free, keyless, CORS-enabled public APIs, called directly from the browser — no server needed. DuckDuckGo's API only returns *instant-answer* style snippets (not full search-engine results), which is a limitation of what DuckDuckGo publicly exposes, not of this app.
+If you'd rather always use whatever model Puter picks by default (no live browsing), just leave the chip off — the app falls back to a plain `puter.ai.chat(messages, {stream:true})` call with no model pinned, same as before.
+
+All three research APIs are free, keyless, and CORS-enabled, called directly from the browser — no server needed. DuckDuckGo's API only returns *instant-answer* style snippets (not full search-engine results), which is a limitation of what DuckDuckGo publicly exposes, not of this app.
+
+*(Puter model names change over time — if `openai/gpt-5.6-luna` ever stops working, swap it for whatever current OpenAI model string Puter's docs list at [docs.puter.com/AI/chat](https://docs.puter.com/AI/chat/); search for `chatOptions` in `index.html` to find the one line to edit.)*
 
 ### Save & find files (Telegram-backed storage)
 Tap **📎 Save file** above the composer to upload any file (up to Telegram's 45MB bot limit) straight into your Telegram channel, with a short description/tag you write yourself (e.g. "passport scan", "resume 2026"). RiNi stores the file's Telegram `file_id` + your tag locally (and syncs the metadata like everything else).
