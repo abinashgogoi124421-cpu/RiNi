@@ -43,6 +43,21 @@ Two things happen, for two different reasons:
 
    *Why not the full chat history too?* The Telegram Bot API has no "list channel messages" endpoint — a bot can only reliably re-read the **currently pinned message**, not arbitrary past ones. So full transcripts stay local per device (reliable, instant, offline-friendly) while the pinned index carries the cross-device bits. If you want true multi-device transcript sync later, the clean fix is a small backend (see the serverless note above) — happy to add it.
 
+### A visible end to each reply
+Every AI message now ends with a small footer: a **Copy** button (copies the raw text/markdown to your clipboard, with a "Copied ✓" confirmation) and a timestamp — so a finished response reads as finished instead of just trailing off.
+
+### Web research (Wikipedia + DuckDuckGo + Wikimedia Commons)
+Tap the **🌐 Web search** chip above the composer to turn it on for your next messages (tap again to turn off). While it's active, sending a message also:
+- Pulls a short summary from **Wikipedia**'s API and an instant-answer snippet from **DuckDuckGo**'s API, feeds both into RiNi's context so it can answer using real, current information, and lists them as tappable **source chips** under the reply.
+- Pulls matching photos from **Wikimedia Commons** and shows them as a horizontally scrollable strip under the reply. Tap any thumbnail to open a full-width, swipeable **lightbox** viewer.
+
+All three are free, keyless, CORS-enabled public APIs, called directly from the browser — no server needed. DuckDuckGo's API only returns *instant-answer* style snippets (not full search-engine results), which is a limitation of what DuckDuckGo publicly exposes, not of this app.
+
+### Save & find files (Telegram-backed storage)
+Tap **📎 Save file** above the composer to upload any file (up to Telegram's 45MB bot limit) straight into your Telegram channel, with a short description/tag you write yourself (e.g. "passport scan", "resume 2026"). RiNi stores the file's Telegram `file_id` + your tag locally (and syncs the metadata like everything else).
+
+Later, just mention what you're looking for in normal chat ("do you have my resume?") — RiNi matches your message against saved file names/tags and attaches a **file card with a Download button** to its reply. Tapping Download fetches the file straight from Telegram and saves it through the browser's normal download flow (works in the installed Chrome PWA).
+
 ### Sounds & animation
 All sound effects are synthesized on the fly with the Web Audio API (no audio files to fetch/host) — distinct tones for send, receive, tab switches, and toggles. The AI reply types itself in character-by-character (streamed live when Puter streams, or simulated if it doesn't), then gets replaced with fully formatted markdown once complete.
 
