@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>RiNi</title>
+<meta name="description" content="RiNi — a personal AI chat assistant with memory">
+<meta name="theme-color" content="#0b0b12">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RiNi">
+
+<!-- Puter.js — auth + AI, no API keys, no backend -->
+<script src="https://js.puter.com/v2/"></script>
+
+<!-- Markdown, math and code rendering for AI responses -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<style>
+:root{
+  --bg:#0b0b12;
+  --bg-elevated:#15151f;
+  --bg-card:#1a1a26;
+  --border:#26263a;
+  --text:#f2f2f7;
+  --text-dim:#9a9ab0;
+  --text-faint:#65657a;
+  --accent:#4f6bff;
+  --accent-2:#7c5cff;
+  --accent-soft:rgba(79,107,255,.16);
+  --green:#3ddc84;
+  --red:#ff5d5d;
+  --radius-lg:22px;
+  --radius-md:16px;
+  --radius-sm:10px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+[data-theme="light"]{
+  --bg:#f4f4f8;
+  --bg-elevated:#ffffff;
+  --bg-card:#ffffff;
+  --border:#e3e3ee;
+  --text:#16161f;
+  --text-dim:#5c5c70;
+  --text-faint:#9797a8;
+  --accent-soft:rgba(79,107,255,.10);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  overflow:hidden;
+  transition:background .25s ease,color .25s ease;
+}
+#app{
+  height:100vh;
+  height:100dvh;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  max-width:640px;
+  margin:0 auto;
+  background:var(--bg);
+}
+button{font-family:inherit;}
+::-webkit-scrollbar{width:0;height:0;}
+
+/* ---------- Top bar ---------- */
+.topbar{
+  padding:calc(var(--safe-top) + 14px) 16px 12px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  border-bottom:1px solid var(--border);
+  background:var(--bg);
+  flex-shrink:0;
+  z-index:20;
+}
+.icon-btn{
+  width:38px;height:38px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:transparent;border:none;color:var(--text);
+  cursor:pointer;
+}
+.icon-btn:active{background:var(--bg-card);}
+.topbar h1{font-size:19px;margin:0;font-weight:700;flex:1;}
+.topbar-sub{font-size:12px;color:var(--text-dim);}
+
+/* ---------- Tab panels ---------- */
+.panels{flex:1;min-height:0;position:relative;}
+.panel{
+  position:absolute;inset:0;
+  display:none;flex-direction:column;
+  height:100%;
+}
+.panel.active{display:flex;}
+
+/* ---------- Bottom nav ---------- */
+.bottomnav{
+  display:flex;
+  border-top:1px solid var(--border);
+  background:var(--bg-elevated);
+  padding-bottom:var(--safe-bottom);
+  flex-shrink:0;
+  z-index:20;
+}
+.navbtn{
+  flex:1;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:10px 0 8px;
+  background:none;border:none;color:var(--text-faint);
+  cursor:pointer;font-size:11px;font-weight:600;
+}
+.navbtn svg{width:22px;height:22px;}
+.navbtn.active{color:var(--accent);}
+
+/* ================= CHAT ================= */
+#panel-chat{background:var(--bg);}
+.chat-scroll{
+  flex:1;overflow-y:auto;padding:16px 14px 10px;
+  display:flex;flex-direction:column;gap:16px;
+}
+.msg-row{display:flex;flex-direction:column;gap:4px;max-width:100%;}
+.msg-row.user{align-items:flex-end;}
+.bubble-user{
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#fff;
+  padding:11px 15px;
+  border-radius:18px 18px 4px 18px;
+  max-width:82%;
+  font-size:15px;line-height:1.45;
+  white-space:pre-wrap;word-wrap:break-word;
+}
+.msg-time{font-size:11px;color:var(--text-faint);padding:0 4px;}
+.ai-block{width:100%;font-size:15px;line-height:1.6;}
+.ai-block p{margin:0 0 10px;}
+.ai-block p:last-child{margin-bottom:0;}
+.ai-block ul,.ai-block ol{margin:6px 0 12px;padding-left:22px;}
+.ai-block li{margin-bottom:4px;}
+.ai-block strong{color:var(--text);font-weight:700;}
+.ai-block em{color:var(--text-dim);}
+.ai-block code{
+  background:var(--bg-card);border:1px solid var(--border);
+  padding:2px 6px;border-radius:6px;font-size:.88em;
+}
+.ai-block pre{
+  background:#0d0d16;border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:12px 14px;overflow-x:auto;margin:10px 0;
+}
+.ai-block pre code{background:none;border:none;padding:0;}
+.ai-block table{
+  width:100%;border-collapse:collapse;margin:10px 0;
+  font-size:13.5px;overflow-x:auto;display:block;
+}
+.ai-block th,.ai-block td{
+  border:1px solid var(--border);padding:7px 10px;text-align:left;
+}
+.ai-block th{background:var(--bg-card);font-weight:700;}
+.ai-block blockquote{
+  border-left:3px solid var(--accent);margin:8px 0;padding:2px 12px;
+  color:var(--text-dim);
+}
+.ai-cursor{display:inline-block;width:7px;height:1em;background:var(--accent);
+  vertical-align:text-bottom;margin-left:2px;animation:blink 1s step-end infinite;}
+@keyframes blink{50%{opacity:0;}}
+.typing-dots{display:flex;gap:4px;padding:6px 0;}
+.typing-dots span{
+  width:7px;height:7px;border-radius:50%;background:var(--text-faint);
+  animation:bounce 1.2s infinite ease-in-out;
+}
+.typing-dots span:nth-child(2){animation-delay:.15s;}
+.typing-dots span:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.4;}30%{transform:translateY(-5px);opacity:1;}}
+
+.composer{
+  display:flex;align-items:flex-end;gap:10px;
+  padding:10px 12px calc(10px + var(--safe-bottom));
+  border-top:1px solid var(--border);
+  background:var(--bg-elevated);
+  flex-shrink:0;
+}
+.composer textarea{
+  flex:1;resize:none;max-height:120px;min-height:42px;
+  background:var(--bg-card);color:var(--text);
+  border:1px solid var(--border);border-radius:22px;
+  padding:11px 16px;font-size:15px;line-height:1.3;font-family:inherit;
+  outline:none;
+}
+.composer textarea::placeholder{color:var(--text-faint);}
+.send-btn{
+  width:44px;height:44px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  border:none;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:#fff;
+}
+.send-btn:disabled{opacity:.45;}
+.send-btn svg{width:19px;height:19px;margin-left:2px;}
+
+/* ---------- Drawer ---------- */
+.drawer-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,.5);
+  opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:29;
+}
+.drawer-overlay.show{opacity:1;pointer-events:auto;}
+.drawer{
+  position:absolute;top:0;left:0;bottom:0;width:78%;max-width:300px;
+  background:var(--bg-elevated);border-right:1px solid var(--border);
+  transform:translateX(-105%);transition:transform .25s ease;
+  z-index:30;display:flex;flex-direction:column;
+  padding-top:var(--safe-top);
+}
+.drawer.show{transform:translateX(0);}
+.drawer-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 16px 10px;
+}
+.drawer-head h2{font-size:17px;margin:0;}
+.new-chat-btn{
+  margin:6px 16px 12px;padding:12px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;
+  font-weight:700;font-size:14.5px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.drawer-section-label{
+  font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--text-faint);
+  padding:6px 16px;
+}
+.session-list{overflow-y:auto;flex:1;padding:0 10px 16px;}
+.session-item{
+  padding:11px 12px;border-radius:12px;cursor:pointer;margin-bottom:3px;
+}
+.session-item.active{background:var(--accent-soft);}
+.session-item .stitle{font-size:14.5px;font-weight:600;margin-bottom:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.session-item .smeta{font-size:12px;color:var(--text-dim);}
+.session-item .sdelete{float:right;color:var(--text-faint);background:none;border:none;font-size:16px;cursor:pointer;padding:2px 4px;}
+
+/* ================= MEMORIES ================= */
+#panel-memories .scroll{flex:1;overflow-y:auto;padding:8px 16px 24px;}
+.mem-cards{display:flex;gap:12px;margin:14px 0 22px;}
+.mem-card{
+  flex:1;background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius-md);padding:16px 14px;
+}
+.mem-card .mc-icon{font-size:22px;margin-bottom:10px;display:block;}
+.mem-card .mc-title{font-size:17px;font-weight:700;line-height:1.25;margin-bottom:6px;}
+.mem-card .mc-sub{font-size:12px;color:var(--text-faint);}
+.section-title{font-size:19px;font-weight:700;margin:6px 0 16px;}
+.timeline{position:relative;padding-left:22px;}
+.timeline::before{
+  content:"";position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:var(--border);
+}
+.tl-item{position:relative;padding-bottom:24px;}
+.tl-item::before{
+  content:"";position:absolute;left:-22px;top:4px;width:10px;height:10px;border-radius:50%;
+  background:var(--text-faint);border:2px solid var(--bg);
+}
+.tl-item.recent::before{background:var(--accent);}
+.tl-item .tl-title{font-size:15.5px;font-weight:700;margin-bottom:3px;}
+.tl-item .tl-sub{font-size:13.5px;color:var(--text-dim);}
+.empty-hint{color:var(--text-faint);font-size:13.5px;padding:6px 0 20px;}
+.tg-btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:15px;border-radius:26px;border:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;
+  font-weight:700;font-size:15px;cursor:pointer;margin-top:6px;
+}
+.tg-btn svg{width:19px;height:19px;}
+.tg-btn .spin{animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ================= SETTINGS ================= */
+#panel-settings .scroll{flex:1;overflow-y:auto;padding:8px 16px 32px;}
+.card{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius-md);padding:18px;margin-bottom:16px;
+}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.card-head .ch-icon{font-size:19px;}
+.card-head h3{font-size:16.5px;margin:0;font-weight:700;}
+.kv-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.kv-label{font-size:12.5px;color:var(--text-faint);}
+.kv-value{font-size:14px;font-weight:600;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;}
+.status-row{display:flex;align-items:center;gap:8px;margin-top:10px;}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
+.status-dot.off{background:var(--text-faint);}
+.status-text{font-size:13.5px;color:var(--green);font-weight:600;}
+.status-text.off{color:var(--text-dim);}
+.status-sub{font-size:12px;color:var(--text-faint);margin-left:auto;}
+.card-sub{font-size:13px;color:var(--text-dim);line-height:1.4;margin-bottom:2px;}
+.primary-btn{
+  width:100%;padding:13px;border-radius:13px;border:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;
+  font-weight:700;font-size:14.5px;cursor:pointer;margin-top:8px;
+}
+.ghost-btn{
+  width:100%;padding:13px;border-radius:13px;border:1px solid var(--border);
+  background:transparent;color:var(--text);
+  font-weight:600;font-size:14.5px;cursor:pointer;margin-top:8px;
+}
+.user-chip{display:flex;align-items:center;gap:10px;margin-top:4px;}
+.user-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;
+}
+textarea.instr{
+  width:100%;min-height:70px;background:var(--bg);color:var(--text);
+  border:1px solid var(--border);border-radius:12px;padding:12px;
+  font-size:14px;font-family:inherit;resize:vertical;outline:none;
+}
+textarea.instr::placeholder{color:var(--text-faint);}
+.badge{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--accent-soft);color:var(--accent);
+  padding:8px 13px;border-radius:20px;font-size:13px;font-weight:700;margin-top:8px;
+}
+.seg{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:3px;}
+.seg button{
+  flex:1;border:none;background:none;color:var(--text-dim);padding:9px 0;
+  border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.seg button.active{background:var(--accent);color:#fff;}
+.appearance-row{display:flex;justify-content:space-between;align-items:center;}
+.about-line{font-size:12px;color:var(--text-faint);text-align:center;margin-top:6px;}
+
+@media (min-width:520px){
+  .drawer{max-width:320px;}
+}
+</style>
+</head>
+<body data-theme="dark">
+<div id="app">
+
+  <!-- ================= CHAT PANEL ================= -->
+  <div class="panel active" id="panel-chat">
+    <div class="topbar">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Sessions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+      <div>
+        <h1>RiNi Chat</h1>
+        <div class="topbar-sub" id="sessionSub">New chat</div>
+      </div>
+    </div>
+
+    <div class="chat-scroll" id="chatScroll"></div>
+
+    <div class="composer">
+      <textarea id="chatInput" placeholder="Message RiNi Chat…" rows="1"></textarea>
+      <button class="send-btn" id="sendBtn" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= MEMORIES PANEL ================= -->
+  <div class="panel" id="panel-memories">
+    <div class="topbar"><h1>Memory Brain</h1></div>
+    <div class="scroll">
+      <div class="mem-cards">
+        <div class="mem-card">
+          <span class="mc-icon">🧠✨</span>
+          <div class="mc-title" id="memCountTitle">AI remembered 0 memories</div>
+          <div class="mc-sub">From this week</div>
+        </div>
+        <div class="mem-card">
+          <span class="mc-icon">💬📝</span>
+          <div class="mc-title">Learning from your chats</div>
+          <div class="mc-sub">Updating insights</div>
+        </div>
+      </div>
+
+      <div class="section-title">Memory timeline</div>
+      <div class="timeline" id="memTimeline"></div>
+
+      <button class="tg-btn" id="tgRetrieveBtn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.7L2.9 11c-1.2.5-1.2 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.9.9.9.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.8l3-14c.3-1.2-.4-1.7-1.2-1z"/></svg>
+        <span id="tgRetrieveLabel">Telegram cloud retrieval</span>
+        <svg class="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 3v6h-6"/></svg>
+      </button>
+    </div>
+
+    <div class="bottomnav" id="bottomnav1"></div>
+  </div>
+
+  <!-- ================= SETTINGS PANEL ================= -->
+  <div class="panel" id="panel-settings">
+    <div class="topbar"><h1>Settings</h1></div>
+    <div class="scroll">
+
+      <div class="card">
+        <div class="card-head"><span class="ch-icon">☁️</span><h3>Cloud Status</h3></div>
+        <div class="kv-row"><span class="kv-label">Channel ID</span></div>
+        <div class="kv-value" id="channelIdVal">—</div>
+        <div class="status-row">
+          <span class="status-dot" id="tgStatusDot"></span>
+          <span class="status-text" id="tgStatusText">Telegram auto-saving</span>
+          <span class="status-sub" id="tgStatusSub">Active</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="ch-icon">👤</span><h3>Puter Account</h3></div>
+        <div class="card-sub" id="puterStatusText">Not signed in • Save to Puter cloud for backup &amp; sync</div>
+        <div class="user-chip" id="userChip" style="display:none;">
+          <div class="user-avatar" id="userAvatar">?</div>
+          <div>
+            <div style="font-weight:700;font-size:14.5px;" id="userName">—</div>
+            <div style="font-size:12px;color:var(--text-faint);">Signed in with Puter</div>
+          </div>
+        </div>
+        <button class="primary-btn" id="puterAuthBtn">Login / Sign Up</button>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="ch-icon">✏️</span><h3>Custom Instructions</h3></div>
+        <textarea class="instr" id="instrInput" placeholder="How should RiNi talk to you"></textarea>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="ch-icon">🧠✨</span><h3>Memory Intelligence</h3></div>
+        <div class="card-sub">AI learns from all chats automatically • searches when needed</div>
+        <div class="badge">🗄️ <span id="memIndexedCount">0</span> memories indexed</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="ch-icon">🎨</span><h3>Appearance</h3></div>
+        <div class="appearance-row">
+          <span class="kv-label">Theme</span>
+          <div class="seg" id="themeSeg">
+            <button data-theme="dark" class="active">🌙 Dark</button>
+            <button data-theme="light">☀️ Light</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-line">RiNi · running on Puter.js + Telegram cloud</div>
+    </div>
+
+    <div class="bottomnav" id="bottomnav2"></div>
+  </div>
+
+  <!-- Drawer (chat sessions) -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-head"><h2>Sessions</h2>
+      <button class="icon-btn" id="drawerCloseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    </div>
+    <button class="new-chat-btn" id="newChatBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Chat
+    </button>
+    <div class="drawer-section-label">RECENT</div>
+    <div class="session-list" id="sessionList"></div>
+  </div>
+
+  <!-- Bottom nav lives once in chat panel; cloned markup for other panels via JS -->
+  <div class="bottomnav" id="bottomnavChat"></div>
+</div>
+
+<script>
+/* =========================================================================
+   RiNi — configuration
+   ========================================================================= */
+const TG_BOT_TOKEN = "8835604359:AAFDVBTEXWb7lwQsSMynshd3HNoOM8dG-3E";
+const TG_CHAT_ID   = "-1003953146702";
+const TG_API = `https://api.telegram.org/bot${TG_BOT_TOKEN}`;
+
+/* =========================================================================
+   Storage helpers (localStorage-backed state, mirrored to Telegram)
+   ========================================================================= */
+const Store = {
+  get(key, fallback){
+    try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+    catch(e){ return fallback; }
+  },
+  set(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+};
+
+let state = {
+  sessions: Store.get('rini_sessions', []),      // [{id,title,createdAt,updatedAt}]
+  messagesBySession: Store.get('rini_messages', {}), // {sessionId:[{role,content,ts}]}
+  currentSessionId: Store.get('rini_current_session', null),
+  memories: Store.get('rini_memories', []),      // [{title,sub,ts}]
+  instructions: localStorage.getItem('rini_instructions') || '',
+  theme: localStorage.getItem('rini_theme') || 'dark'
+};
+
+function persist(){
+  Store.set('rini_sessions', state.sessions);
+  Store.set('rini_messages', state.messagesBySession);
+  Store.set('rini_current_session', state.currentSessionId);
+  Store.set('rini_memories', state.memories);
+}
+
+/* =========================================================================
+   Sound effects — synthesized with WebAudio, no asset files needed
+   ========================================================================= */
+let actx = null;
+function ctx(){ if(!actx){ actx = new (window.AudioContext||window.webkitAudioContext)(); } return actx; }
+function tone(freq, dur, type='sine', gain=0.05, delay=0){
+  try{
+    const c = ctx();
+    const t0 = c.currentTime + delay;
+    const osc = c.createOscillator();
+    const g = c.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(gain, t0+0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+    osc.connect(g); g.connect(c.destination);
+    osc.start(t0); osc.stop(t0+dur+0.02);
+  }catch(e){}
+}
+const Sound = {
+  send(){ tone(720,.09,'sine',.045); tone(980,.08,'sine',.035,.05); },
+  receive(){ tone(520,.1,'sine',.04); tone(660,.12,'sine',.035,.09); },
+  tab(){ tone(340,.05,'square',.02); },
+  toggle(){ tone(880,.04,'sine',.03); },
+  open(){ tone(420,.06,'sine',.03); tone(560,.06,'sine',.025,.04); },
+  error(){ tone(180,.18,'sawtooth',.03); }
+};
+
+/* =========================================================================
+   Markdown / LaTeX / code rendering
+   ========================================================================= */
+marked.setOptions({ breaks:true, gfm:true });
+function renderAiContent(el, raw){
+  el.innerHTML = marked.parse(raw || '');
+  el.querySelectorAll('pre code').forEach(b => { try{ hljs.highlightElement(b); }catch(e){} });
+  try{
+    renderMathInElement(el, {
+      delimiters:[
+        {left:'$$', right:'$$', display:true},
+        {left:'\\[', right:'\\]', display:true},
+        {left:'$', right:'$', display:false},
+        {left:'\\(', right:'\\)', display:false}
+      ],
+      throwOnError:false
+    });
+  }catch(e){}
+}
+
+/* =========================================================================
+   Telegram cloud sync
+   ========================================================================= */
+async function tgCall(method, params){
+  const res = await fetch(`${TG_API}/${method}`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(params)
+  });
+  return res.json();
+}
+
+let tgSyncTimer = null;
+function scheduleSync(){
+  clearTimeout(tgSyncTimer);
+  tgSyncTimer = setTimeout(syncIndexToTelegram, 2500);
+}
+
+async function syncIndexToTelegram(){
+  setTgStatus('syncing');
+  try{
+    const payload = {
+      v: 1,
+      updatedAt: Date.now(),
+      instructions: state.instructions,
+      memories: state.memories.slice(-40),
+      sessions: state.sessions.slice(-25).map(s => ({
+        id:s.id, title:s.title, updatedAt:s.updatedAt,
+        count:(state.messagesBySession[s.id]||[]).length
+      }))
+    };
+    let text = JSON.stringify(payload);
+    if(text.length > 3900){
+      // trim oldest memories first if payload is too large for a single message
+      payload.memories = payload.memories.slice(-15);
+      text = JSON.stringify(payload);
+    }
+    const sent = await tgCall('sendMessage', {
+      chat_id: TG_CHAT_ID,
+      text: "```rini-index\n" + text + "\n```",
+      parse_mode: "Markdown",
+      disable_notification: true
+    });
+    if(sent.ok){
+      await tgCall('pinChatMessage', {
+        chat_id: TG_CHAT_ID,
+        message_id: sent.result.message_id,
+        disable_notification: true
+      });
+    }
+    setTgStatus('synced');
+  }catch(e){
+    setTgStatus('error');
+  }
+}
+
+// Permanent human-readable transcript log — this is the "unlimited storage":
+// every exchange is also posted as its own message, so the full history
+// lives in the Telegram channel forever and can be read/searched/forwarded
+// from the Telegram app itself, even though cross-device restore only
+// pulls the compact pinned index (see readme.md for why).
+function logExchangeToTelegram(sessionTitle, userText, aiText){
+  const chunk = `🗨️ *${escapeMd(sessionTitle)}*\n\n*You:* ${escapeMd(truncate(userText,600))}\n\n*RiNi:* ${escapeMd(truncate(aiText,2500))}`;
+  tgCall('sendMessage', {
+    chat_id: TG_CHAT_ID, text: chunk, parse_mode:'Markdown', disable_notification:true
+  }).catch(()=>{});
+}
+function escapeMd(s){ return (s||'').replace(/([_*`\[\]])/g,'\\$1'); }
+function truncate(s,n){ return s && s.length>n ? s.slice(0,n)+'…' : (s||''); }
+
+async function fetchPinnedFromTelegram(){
+  const res = await tgCall('getChat', { chat_id: TG_CHAT_ID });
+  if(!res.ok || !res.result.pinned_message) return null;
+  const msg = res.result.pinned_message;
+  const raw = msg.text || '';
+  const match = raw.match(/```rini-index\n([\s\S]*?)\n```/);
+  const jsonStr = match ? match[1] : raw;
+  try{ return JSON.parse(jsonStr); }catch(e){ return null; }
+}
+
+function setTgStatus(mode){
+  const dot = document.getElementById('tgStatusDot');
+  const text = document.getElementById('tgStatusText');
+  const sub = document.getElementById('tgStatusSub');
+  if(!dot) return;
+  if(mode==='syncing'){ dot.classList.remove('off'); text.classList.remove('off'); text.textContent='Telegram auto-saving'; sub.textContent='Syncing…'; }
+  else if(mode==='synced'){ dot.classList.remove('off'); text.classList.remove('off'); text.textContent='Telegram auto-saving'; sub.textContent='Active • Synced just now'; }
+  else if(mode==='error'){ dot.classList.add('off'); text.classList.add('off'); text.textContent='Telegram sync'; sub.textContent='Offline / error'; }
+}
+
+/* =========================================================================
+   Sessions
+   ========================================================================= */
+function uid(){ return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function createSession(){
+  const s = { id: uid(), title:'New Chat', createdAt:Date.now(), updatedAt:Date.now() };
+  state.sessions.unshift(s);
+  state.messagesBySession[s.id] = [];
+  state.currentSessionId = s.id;
+  persist(); renderSessions(); renderChat(); closeDrawer();
+  scheduleSync();
+}
+
+function currentMessages(){
+  if(!state.currentSessionId) return [];
+  return state.messagesBySession[state.currentSessionId] || [];
+}
+
+function touchSession(id, titleFromText){
+  const s = state.sessions.find(x=>x.id===id);
+  if(!s) return;
+  s.updatedAt = Date.now();
+  if(titleFromText && (s.title==='New Chat' || !s.title)){
+    s.title = titleFromText.slice(0,42) + (titleFromText.length>42?'…':'');
+  }
+  state.sessions.sort((a,b)=>b.updatedAt-a.updatedAt);
+  persist();
+}
+
+function timeAgo(ts){
+  const diff = Date.now()-ts;
+  const m = Math.floor(diff/60000);
+  if(m < 1) return 'Now';
+  if(m < 60) return m+'m ago';
+  const h = Math.floor(m/60);
+  if(h < 24) return h===1?'1h ago':h+'h ago';
+  const d = Math.floor(h/24);
+  if(d===1) return 'Yesterday';
+  if(d < 7) return d+' days ago';
+  return new Date(ts).toLocaleDateString();
+}
+
+function renderSessions(){
+  const list = document.getElementById('sessionList');
+  list.innerHTML = '';
+  if(state.sessions.length===0){
+    list.innerHTML = '<div class="empty-hint">No sessions yet — start a new chat.</div>';
+    return;
+  }
+  state.sessions.forEach(s=>{
+    const count = (state.messagesBySession[s.id]||[]).length;
+    const div = document.createElement('div');
+    div.className = 'session-item' + (s.id===state.currentSessionId ? ' active':'');
+    div.innerHTML = `<button class="sdelete" data-id="${s.id}">✕</button>
+      <div class="stitle">${escapeHtml(s.title||'New Chat')}</div>
+      <div class="smeta">${timeAgo(s.updatedAt)} • ${count} message${count===1?'':'s'}</div>`;
+    div.addEventListener('click', (e)=>{
+      if(e.target.closest('.sdelete')){
+        e.stopPropagation();
+        deleteSession(s.id);
+        return;
+      }
+      state.currentSessionId = s.id;
+      persist(); renderSessions(); renderChat(); closeDrawer();
+    });
+    list.appendChild(div);
+  });
+}
+
+function deleteSession(id){
+  state.sessions = state.sessions.filter(s=>s.id!==id);
+  delete state.messagesBySession[id];
+  if(state.currentSessionId===id){
+    state.currentSessionId = state.sessions[0] ? state.sessions[0].id : null;
+  }
+  persist(); renderSessions(); renderChat(); scheduleSync();
+}
+
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* =========================================================================
+   Chat rendering + sending
+   ========================================================================= */
+function renderChat(){
+  const scroll = document.getElementById('chatScroll');
+  scroll.innerHTML = '';
+  const sub = document.getElementById('sessionSub');
+  const msgs = currentMessages();
+  const session = state.sessions.find(s=>s.id===state.currentSessionId);
+  sub.textContent = session ? session.title : 'New chat';
+
+  msgs.forEach(m=>{
+    if(m.role==='user'){
+      scroll.appendChild(buildUserBubble(m.content, m.ts));
+    } else {
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+      const block = document.createElement('div');
+      block.className = 'ai-block';
+      renderAiContent(block, m.content);
+      row.appendChild(block);
+      scroll.appendChild(row);
+    }
+  });
+  scroll.scrollTop = scroll.scrollHeight;
+}
+
+function buildUserBubble(text, ts){
+  const row = document.createElement('div');
+  row.className = 'msg-row user';
+  row.innerHTML = `<div class="bubble-user">${escapeHtml(text)}</div><div class="msg-time">${new Date(ts||Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>`;
+  return row;
+}
+
+function autoresizeTextarea(el){
+  el.style.height='auto';
+  el.style.height = Math.min(el.scrollHeight,120)+'px';
+}
+
+async function sendMessage(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+
+  if(!state.currentSessionId){ createSession(); }
+
+  Sound.send();
+  input.value=''; autoresizeTextarea(input);
+  document.getElementById('sendBtn').disabled = true;
+
+  const sid = state.currentSessionId;
+  state.messagesBySession[sid].push({role:'user', content:text, ts:Date.now()});
+  touchSession(sid, text);
+  persist();
+
+  const scroll = document.getElementById('chatScroll');
+  scroll.appendChild(buildUserBubble(text, Date.now()));
+  scroll.scrollTop = scroll.scrollHeight;
+
+  // typing indicator row
+  const aiRow = document.createElement('div');
+  aiRow.className = 'msg-row';
+  const aiBlock = document.createElement('div');
+  aiBlock.className = 'ai-block';
+  aiBlock.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+  aiRow.appendChild(aiBlock);
+  scroll.appendChild(aiRow);
+  scroll.scrollTop = scroll.scrollHeight;
+
+  try{
+    const messages = buildPromptMessages(sid);
+    let full = '';
+    let streamed = false;
+
+    const resp = await puter.ai.chat(messages, { stream:true });
+    if(resp && typeof resp[Symbol.asyncIterator] === 'function'){
+      streamed = true;
+      aiBlock.innerHTML = '<span class="live-text"></span><span class="ai-cursor"></span>';
+      const liveText = aiBlock.querySelector('.live-text');
+      let first = true;
+      for await (const part of resp){
+        const chunk = (part && part.text) ? part.text : '';
+        if(!chunk) continue;
+        if(first){ Sound.receive(); first=false; }
+        full += chunk;
+        liveText.textContent = full;
+        scroll.scrollTop = scroll.scrollHeight;
+      }
+    } else {
+      // non-streaming fallback response shapes
+      full = (typeof resp === 'string') ? resp
+           : (resp && resp.message && resp.message.content) ? resp.message.content
+           : (resp && resp.text) ? resp.text
+           : String(resp || '');
+      Sound.receive();
+      await typeReveal(aiBlock, full);
+    }
+
+    renderAiContent(aiBlock, full);
+
+    state.messagesBySession[sid].push({role:'assistant', content:full, ts:Date.now()});
+    touchSession(sid);
+    persist();
+    renderSessions();
+
+    const session = state.sessions.find(s=>s.id===sid);
+    logExchangeToTelegram(session ? session.title : 'RiNi Chat', text, full);
+    extractMemories(text, full);
+    scheduleSync();
+  }catch(err){
+    Sound.error();
+    aiBlock.innerHTML = `<span style="color:var(--red);">Something went wrong reaching RiNi. ${err && err.message ? escapeHtml(err.message) : 'Please try again.'}</span>`;
+  }finally{
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+
+async function typeReveal(el, text){
+  el.innerHTML = '<span class="live-text"></span><span class="ai-cursor"></span>';
+  const liveText = el.querySelector('.live-text');
+  const step = Math.max(1, Math.floor(text.length/220));
+  for(let i=0;i<text.length;i+=step){
+    liveText.textContent = text.slice(0,i+step);
+    await new Promise(r=>setTimeout(r,8));
+  }
+  liveText.textContent = text;
+}
+
+function buildPromptMessages(sid){
+  const sys = [];
+  if(state.instructions && state.instructions.trim()){
+    sys.push(`The user's custom instructions for how you should talk to them: ${state.instructions.trim()}`);
+  }
+  if(state.memories.length){
+    const recent = state.memories.slice(-12).map(m=>`- ${m.title}: ${m.sub}`).join('\n');
+    sys.push(`Relevant things you remember about the user from earlier conversations:\n${recent}`);
+  }
+  const messages = [];
+  if(sys.length){
+    messages.push({ role:'system', content: `You are RiNi, a helpful, friendly personal AI assistant. Use markdown formatting (bold, italics, tables, lists) and LaTeX ($...$) for math when it helps clarity.\n\n${sys.join('\n\n')}` });
+  } else {
+    messages.push({ role:'system', content: 'You are RiNi, a helpful, friendly personal AI assistant. Use markdown formatting (bold, italics, tables, lists) and LaTeX ($...$) for math when it helps clarity.' });
+  }
+  const history = (state.messagesBySession[sid]||[]).slice(-16);
+  history.forEach(m=> messages.push({ role:m.role, content:m.content }));
+  return messages;
+}
+
+/* =========================================================================
+   Memory extraction — a lightweight background call that pulls durable
+   facts out of the exchange so the Memories tab and future prompts can
+   use them.
+   ========================================================================= */
+async function extractMemories(userText, aiText){
+  try{
+    const prompt = `From this exchange, extract at most 2 short durable facts worth remembering about the user long-term (preferences, goals, identity, recurring context). Ignore anything trivial or one-off. Respond with ONLY a JSON array like [{"title":"Short label","sub":"One-line detail"}] — use [] if nothing is worth remembering.\n\nUser: ${userText}\nRiNi: ${aiText}`;
+    const resp = await puter.ai.chat(prompt);
+    const raw = (typeof resp === 'string') ? resp : (resp && resp.message && resp.message.content) || (resp && resp.text) || '';
+    const match = raw.match(/\[[\s\S]*\]/);
+    if(!match) return;
+    const facts = JSON.parse(match[0]);
+    if(!Array.isArray(facts) || facts.length===0) return;
+    facts.forEach(f=>{
+      if(!f || !f.title) return;
+      const dup = state.memories.some(m=>m.title.toLowerCase()===String(f.title).toLowerCase());
+      if(!dup){
+        state.memories.push({ title:String(f.title).slice(0,60), sub:String(f.sub||'').slice(0,140), ts:Date.now() });
+      }
+    });
+    persist();
+    renderMemories();
+  }catch(e){ /* best-effort — never block chat on this */ }
+}
+
+/* =========================================================================
+   Memories panel
+   ========================================================================= */
+function renderMemories(){
+  const weekAgo = Date.now() - 7*24*60*60*1000;
+  const thisWeek = state.memories.filter(m=>m.ts >= weekAgo).length;
+  document.getElementById('memCountTitle').textContent = `AI remembered ${state.memories.length} ${state.memories.length===1?'memory':'memories'}`;
+  document.getElementById('memIndexedCount').textContent = state.memories.length;
+
+  const tl = document.getElementById('memTimeline');
+  tl.innerHTML = '';
+  if(state.memories.length===0){
+    tl.innerHTML = '<div class="empty-hint">Nothing remembered yet — chat with RiNi and it will start picking up on durable details.</div>';
+    return;
+  }
+  const sorted = [...state.memories].sort((a,b)=>b.ts-a.ts);
+  sorted.forEach((m,i)=>{
+    const div = document.createElement('div');
+    div.className = 'tl-item' + (i===0 ? ' recent':'');
+    div.innerHTML = `<div class="tl-title">${escapeHtml(m.title)}</div><div class="tl-sub">${escapeHtml(m.sub||'')}</div>`;
+    tl.appendChild(div);
+  });
+}
+
+document.getElementById('tgRetrieveBtn').addEventListener('click', async ()=>{
+  const icon = document.querySelector('#tgRetrieveBtn .refresh-icon');
+  const label = document.getElementById('tgRetrieveLabel');
+  icon.classList.add('spin');
+  label.textContent = 'Retrieving…';
+  Sound.tab();
+  try{
+    const data = await fetchPinnedFromTelegram();
+    if(data){
+      if(Array.isArray(data.memories)){
+        data.memories.forEach(m=>{
+          const dup = state.memories.some(x=>x.title.toLowerCase()===String(m.title).toLowerCase());
+          if(!dup) state.memories.push(m);
+        });
+      }
+      if(typeof data.instructions === 'string' && !state.instructions){
+        state.instructions = data.instructions;
+        document.getElementById('instrInput').value = data.instructions;
+      }
+      persist();
+      renderMemories();
+      label.textContent = 'Synced from Telegram ✓';
+      setTgStatus('synced');
+    } else {
+      label.textContent = 'No cloud data found';
+    }
+  }catch(e){
+    label.textContent = 'Retrieval failed';
+    setTgStatus('error');
+  } finally {
+    icon.classList.remove('spin');
+    setTimeout(()=>{ label.textContent='Telegram cloud retrieval'; }, 2200);
+  }
+});
+
+/* =========================================================================
+   Settings panel
+   ========================================================================= */
+document.getElementById('channelIdVal').textContent = TG_CHAT_ID;
+
+const instrInput = document.getElementById('instrInput');
+instrInput.value = state.instructions;
+let instrTimer=null;
+instrInput.addEventListener('input', ()=>{
+  clearTimeout(instrTimer);
+  instrTimer = setTimeout(()=>{
+    state.instructions = instrInput.value;
+    localStorage.setItem('rini_instructions', state.instructions);
+    scheduleSync();
+  }, 500);
+});
+
+async function refreshPuterAuthUI(){
+  const btn = document.getElementById('puterAuthBtn');
+  const chip = document.getElementById('userChip');
+  const statusText = document.getElementById('puterStatusText');
+  try{
+    const signedIn = await puter.auth.isSignedIn();
+    if(signedIn){
+      const user = await puter.auth.getUser();
+      statusText.textContent = 'Signed in • Synced with Puter cloud';
+      chip.style.display='flex';
+      document.getElementById('userName').textContent = user.username || 'Puter user';
+      document.getElementById('userAvatar').textContent = (user.username||'?').slice(0,1).toUpperCase();
+      btn.textContent = 'Sign Out';
+      btn.onclick = async ()=>{ Sound.toggle(); await puter.auth.signOut(); refreshPuterAuthUI(); };
+    } else {
+      statusText.textContent = 'Not signed in • Save to Puter cloud for backup & sync';
+      chip.style.display='none';
+      btn.textContent = 'Login / Sign Up';
+      btn.onclick = async ()=>{ Sound.open(); try{ await puter.auth.signIn(); }catch(e){} refreshPuterAuthUI(); };
+    }
+  }catch(e){ /* puter not ready yet */ }
+}
+
+document.getElementById('themeSeg').addEventListener('click', (e)=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  Sound.toggle();
+  document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const theme = btn.dataset.theme;
+  document.body.setAttribute('data-theme', theme);
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', theme==='dark' ? '#0b0b12' : '#f4f4f8');
+  localStorage.setItem('rini_theme', theme);
+});
+
+/* =========================================================================
+   Bottom navigation (shared across all three panels)
+   ========================================================================= */
+const NAV_ITEMS = [
+  { id:'chat', label:'Chat', icon:`<path d="M21 11.5a8.5 8.5 0 01-8.5 8.5c-1.2 0-2.35-.26-3.38-.73L3 21l1.9-5.02A8.46 8.46 0 013 11.5 8.5 8.5 0 0111.5 3 8.5 8.5 0 0121 11.5z" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linejoin="round"/>` },
+  { id:'memories', label:'Memories', icon:`<ellipse cx="12" cy="6" rx="7" ry="3" stroke="currentColor" stroke-width="1.9" fill="none"/><path d="M5 6v6c0 1.66 3.13 3 7 3s7-1.34 7-3V6" stroke="currentColor" stroke-width="1.9" fill="none"/><path d="M5 12v6c0 1.66 3.13 3 7 3s7-1.34 7-3v-6" stroke="currentColor" stroke-width="1.9" fill="none"/>` },
+  { id:'settings', label:'Settings', icon:`<circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.9" fill="none"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 11-4 0v-.09a1.7 1.7 0 00-1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.7 1.7 0 004.6 15a1.7 1.7 0 00-1.55-1H3a2 2 0 110-4h.09A1.7 1.7 0 004.6 9a1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06A1.7 1.7 0 009 4.6a1.7 1.7 0 001-1.55V3a2 2 0 114 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06A1.7 1.7 0 0019.4 9a1.7 1.7 0 001.55 1H21a2 2 0 110 4h-.09a1.7 1.7 0 00-1.51 1z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/>` }
+];
+function buildNav(container){
+  container.innerHTML = '';
+  NAV_ITEMS.forEach(item=>{
+    const btn = document.createElement('button');
+    btn.className = 'navbtn' + (item.id===activeTab ? ' active':'');
+    btn.dataset.tab = item.id;
+    btn.innerHTML = `<svg viewBox="0 0 24 24">${item.icon}</svg><span>${item.label}</span>`;
+    btn.addEventListener('click', ()=> switchTab(item.id));
+    container.appendChild(btn);
+  });
+}
+
+let activeTab = 'chat';
+function switchTab(tab){
+  if(tab===activeTab) return;
+  Sound.tab();
+  activeTab = tab;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  ['bottomnavChat','bottomnav1','bottomnav2'].forEach(id=>buildNav(document.getElementById(id)));
+  if(tab==='memories') renderMemories();
+  if(tab==='settings') refreshPuterAuthUI();
+}
+['bottomnavChat','bottomnav1','bottomnav2'].forEach(id=>buildNav(document.getElementById(id)));
+
+/* =========================================================================
+   Drawer controls
+   ========================================================================= */
+function openDrawer(){
+  Sound.open();
+  document.getElementById('drawer').classList.add('show');
+  document.getElementById('drawerOverlay').classList.add('show');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('show');
+  document.getElementById('drawerOverlay').classList.remove('show');
+}
+document.getElementById('hamburgerBtn').addEventListener('click', openDrawer);
+document.getElementById('drawerCloseBtn').addEventListener('click', closeDrawer);
+document.getElementById('drawerOverlay').addEventListener('click', closeDrawer);
+document.getElementById('newChatBtn').addEventListener('click', ()=>{ Sound.toggle(); createSession(); });
+
+/* =========================================================================
+   Composer wiring
+   ========================================================================= */
+const chatInput = document.getElementById('chatInput');
+chatInput.addEventListener('input', ()=> autoresizeTextarea(chatInput));
+chatInput.addEventListener('keydown', (e)=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+});
+document.getElementById('sendBtn').addEventListener('click', sendMessage);
+
+/* =========================================================================
+   Boot
+   ========================================================================= */
+function boot(){
+  document.body.setAttribute('data-theme', state.theme);
+  document.querySelectorAll('#themeSeg button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.theme===state.theme);
+  });
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', state.theme==='dark' ? '#0b0b12' : '#f4f4f8');
+
+  if(!state.currentSessionId || !state.sessions.find(s=>s.id===state.currentSessionId)){
+    if(state.sessions.length){ state.currentSessionId = state.sessions[0].id; }
+  }
+  renderSessions();
+  renderChat();
+  renderMemories();
+  setTgStatus('synced');
+
+  const params = new URLSearchParams(location.search);
+  if(params.get('action')==='new-chat'){ createSession(); }
+
+  if(typeof puter !== 'undefined'){
+    refreshPuterAuthUI();
+  } else {
+    window.addEventListener('load', refreshPuterAuthUI);
+  }
+
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+}
+boot();
+</script>
+</body>
+</html>
