@@ -337,6 +337,123 @@ textarea.instr::placeholder{color:var(--text-faint);}
 .appearance-row{display:flex;justify-content:space-between;align-items:center;}
 .about-line{font-size:12px;color:var(--text-faint);text-align:center;margin-top:6px;}
 
+/* ---------- AI message footer (copy button) ---------- */
+.ai-footer{
+  display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:2px;
+}
+.ai-action{
+  display:flex;align-items:center;gap:6px;
+  background:none;border:1px solid var(--border);color:var(--text-dim);
+  padding:6px 12px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;
+}
+.ai-action svg{width:14px;height:14px;}
+.ai-action.copied{color:var(--green);border-color:var(--green);}
+.ai-time{font-size:11px;color:var(--text-faint);margin-left:auto;}
+
+/* ---------- Source chips under AI answers ---------- */
+.src-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.src-chip{
+  font-size:11.5px;color:var(--accent);text-decoration:none;
+  background:var(--accent-soft);padding:5px 10px;border-radius:14px;font-weight:600;
+}
+
+/* ---------- Wikimedia Commons horizontal image strip ---------- */
+.img-strip{
+  display:flex;gap:8px;overflow-x:auto;margin-top:10px;padding-bottom:4px;
+  scroll-snap-type:x proximity;
+}
+.img-strip img{
+  height:120px;width:auto;border-radius:12px;flex-shrink:0;object-fit:cover;
+  border:1px solid var(--border);cursor:pointer;scroll-snap-align:start;
+  background:var(--bg-card);
+}
+.searching-note{
+  font-size:12.5px;color:var(--text-faint);display:flex;align-items:center;gap:8px;margin:2px 0 4px;
+}
+.searching-note .mini-spin{width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+
+/* ---------- Full-width image lightbox ---------- */
+.lightbox{
+  position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:80;
+  display:none;flex-direction:column;
+}
+.lightbox.show{display:flex;}
+.lightbox-top{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:calc(var(--safe-top) + 12px) 16px 10px;color:#fff;flex-shrink:0;
+}
+.lightbox-top .lb-count{font-size:13px;color:#cfcfe0;}
+.lightbox-close{background:none;border:none;color:#fff;width:36px;height:36px;cursor:pointer;}
+.lightbox-scroll{
+  flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;
+}
+.lightbox-scroll .lb-slide{
+  flex:0 0 100%;width:100%;scroll-snap-align:center;
+  display:flex;align-items:center;justify-content:center;padding:0 4px;
+}
+.lightbox-scroll img{width:100%;max-height:100%;object-fit:contain;}
+
+/* ---------- File cards (Telegram-stored files) ---------- */
+.file-card{
+  display:flex;align-items:center;gap:12px;
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:14px;padding:12px 14px;margin-top:10px;
+}
+.file-card .fc-icon{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  background:var(--accent-soft);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.file-card .fc-info{flex:1;min-width:0;}
+.file-card .fc-name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.file-card .fc-tag{font-size:12px;color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.file-card .fc-dl{
+  background:var(--accent);color:#fff;border:none;border-radius:10px;
+  padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer;flex-shrink:0;
+}
+.file-card .fc-dl:disabled{opacity:.6;}
+
+/* ---------- Composer chips (web search toggle / attach) ---------- */
+.composer-chips{
+  display:flex;gap:8px;padding:8px 12px 0;background:var(--bg-elevated);flex-shrink:0;
+}
+.chip{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg-card);border:1px solid var(--border);color:var(--text-dim);
+  padding:7px 13px;border-radius:18px;font-size:12.5px;font-weight:600;cursor:pointer;
+}
+.chip svg{width:14px;height:14px;}
+.chip.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+
+/* ---------- Attach-file modal ---------- */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;
+  opacity:0;pointer-events:none;transition:opacity .2s ease;
+}
+.modal-overlay.show{opacity:1;pointer-events:auto;}
+.modal{
+  position:fixed;left:50%;bottom:0;transform:translate(-50%,110%);
+  width:100%;max-width:640px;
+  background:var(--bg-elevated);border:1px solid var(--border);border-bottom:none;
+  border-radius:22px 22px 0 0;z-index:61;padding:18px 18px calc(18px + var(--safe-bottom));
+  transition:transform .25s ease;
+}
+.modal.show{transform:translate(-50%,0);}
+.modal h3{margin:0 0 14px;font-size:17px;}
+.modal .field-label{font-size:12.5px;color:var(--text-faint);margin:12px 0 6px;font-weight:600;}
+.file-pick-btn{
+  width:100%;padding:14px;border-radius:13px;border:1.5px dashed var(--border);
+  background:var(--bg-card);color:var(--text-dim);font-size:13.5px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.file-pick-btn.has-file{border-style:solid;border-color:var(--accent);color:var(--text);}
+.modal input[type="text"]{
+  width:100%;background:var(--bg-card);color:var(--text);border:1px solid var(--border);
+  border-radius:12px;padding:12px;font-size:14px;font-family:inherit;outline:none;
+}
+.modal-actions{display:flex;gap:10px;margin-top:16px;}
+.modal-actions button{flex:1;}
+
 @media (min-width:520px){
   .drawer{max-width:320px;}
 }
@@ -359,6 +476,16 @@ textarea.instr::placeholder{color:var(--text-faint);}
 
     <div class="chat-scroll" id="chatScroll"></div>
 
+    <div class="composer-chips">
+      <button class="chip" id="webSearchChip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18 14 14 0 010-18z"/></svg>
+        Web search
+      </button>
+      <button class="chip" id="attachChip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21.4 11.1l-8.9 8.9a5 5 0 01-7.1-7.1l8.9-8.9a3.5 3.5 0 015 5l-8.9 8.9a2 2 0 01-2.8-2.8l8.2-8.2"/></svg>
+        Save file
+      </button>
+    </div>
     <div class="composer">
       <textarea id="chatInput" placeholder="Message RiNi Chat…" rows="1"></textarea>
       <button class="send-btn" id="sendBtn" aria-label="Send">
@@ -471,6 +598,31 @@ textarea.instr::placeholder{color:var(--text-faint);}
     <div class="drawer-section-label">RECENT</div>
     <div class="session-list" id="sessionList"></div>
   </div>
+
+  <!-- Save-file modal -->
+  <div class="modal-overlay" id="attachOverlay"></div>
+  <div class="modal" id="attachModal">
+    <h3>Save file to RiNi storage</h3>
+    <button class="file-pick-btn" id="filePickBtn">📎 Choose a file</button>
+    <input type="file" id="fileInput" style="display:none;">
+    <div class="field-label">Description / tag (so you can find it later)</div>
+    <input type="text" id="fileTagInput" placeholder="e.g. rent agreement, passport scan, resume 2026">
+    <div class="modal-actions">
+      <button class="ghost-btn" id="attachCancelBtn">Cancel</button>
+      <button class="primary-btn" id="attachSaveBtn">Save to Telegram</button>
+    </div>
+  </div>
+
+  <!-- Full-width image lightbox -->
+  <div class="lightbox" id="lightbox">
+    <div class="lightbox-top">
+      <span class="lb-count" id="lbCount"></span>
+      <button class="lightbox-close" id="lightboxCloseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+      </button>
+    </div>
+    <div class="lightbox-scroll" id="lightboxScroll"></div>
+  </div>
 </div>
 
 <script>
@@ -497,6 +649,7 @@ let state = {
   messagesBySession: Store.get('rini_messages', {}), // {sessionId:[{role,content,ts}]}
   currentSessionId: Store.get('rini_current_session', null),
   memories: Store.get('rini_memories', []),      // [{title,sub,ts}]
+  files: Store.get('rini_files', []),            // [{id,name,tag,fileId,msgId,size,mime,ts}]
   instructions: localStorage.getItem('rini_instructions') || '',
   theme: localStorage.getItem('rini_theme') || 'dark'
 };
@@ -506,6 +659,7 @@ function persist(){
   Store.set('rini_messages', state.messagesBySession);
   Store.set('rini_current_session', state.currentSessionId);
   Store.set('rini_memories', state.memories);
+  Store.set('rini_files', state.files);
 }
 
 /* =========================================================================
@@ -533,7 +687,9 @@ const Sound = {
   tab(){ tone(340,.05,'square',.02); },
   toggle(){ tone(880,.04,'sine',.03); },
   open(){ tone(420,.06,'sine',.03); tone(560,.06,'sine',.025,.04); },
-  error(){ tone(180,.18,'sawtooth',.03); }
+  error(){ tone(180,.18,'sawtooth',.03); },
+  copy(){ tone(1040,.05,'sine',.03); },
+  download(){ tone(600,.07,'sine',.035); tone(500,.09,'sine',.03,.06); tone(400,.11,'sine',.03,.13); }
 };
 
 /* =========================================================================
@@ -554,6 +710,237 @@ function renderAiContent(el, raw){
       throwOnError:false
     });
   }catch(e){}
+}
+
+/* =========================================================================
+   AI message chrome — content + image strip + file cards + sources + a
+   clear "copy" footer so a finished reply doesn't just trail off.
+   ========================================================================= */
+function buildAiMessageDOM(row, msg){
+  row.innerHTML = '';
+  const block = document.createElement('div');
+  block.className = 'ai-block';
+  renderAiContent(block, msg.content || '');
+  row.appendChild(block);
+
+  if(msg.images && msg.images.length){
+    row.appendChild(buildImageStrip(msg.images));
+  }
+  if(msg.files && msg.files.length){
+    msg.files.forEach(f => row.appendChild(buildFileCard(f)));
+  }
+  if(msg.sources && msg.sources.length){
+    const src = document.createElement('div');
+    src.className = 'src-row';
+    msg.sources.forEach(s=>{
+      const a = document.createElement('a');
+      a.className = 'src-chip'; a.href = s.url; a.target = '_blank'; a.rel='noopener';
+      a.textContent = '🔗 ' + s.label;
+      src.appendChild(a);
+    });
+    row.appendChild(src);
+  }
+
+  const footer = document.createElement('div');
+  footer.className = 'ai-footer';
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'ai-action';
+  copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg> Copy';
+  copyBtn.addEventListener('click', ()=> copyToClipboard(msg.content || '', copyBtn));
+  footer.appendChild(copyBtn);
+  const time = document.createElement('span');
+  time.className = 'ai-time';
+  time.textContent = new Date(msg.ts || Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  footer.appendChild(time);
+  row.appendChild(footer);
+
+  return block; // returned so streaming code can keep writing into it live
+}
+
+function copyToClipboard(text, btn){
+  const done = ()=>{
+    Sound.copy();
+    btn.classList.add('copied');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Copied';
+    setTimeout(()=>{
+      btn.classList.remove('copied');
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg> Copy';
+    }, 1800);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text,done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+function fallbackCopy(text, done){
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    done();
+  }catch(e){}
+}
+
+/* ---------- Wikimedia Commons image strip + full-width lightbox ---------- */
+function buildImageStrip(images){
+  const strip = document.createElement('div');
+  strip.className = 'img-strip';
+  images.forEach((img, i)=>{
+    const el = document.createElement('img');
+    el.src = img.thumb; el.loading = 'lazy'; el.alt = img.title || '';
+    el.addEventListener('click', ()=> openLightbox(images, i));
+    strip.appendChild(el);
+  });
+  return strip;
+}
+function openLightbox(images, startIndex){
+  Sound.tab();
+  const scroll = document.getElementById('lightboxScroll');
+  scroll.innerHTML = '';
+  images.forEach(img=>{
+    const slide = document.createElement('div');
+    slide.className = 'lb-slide';
+    const el = document.createElement('img');
+    el.src = img.full || img.thumb; el.alt = img.title || '';
+    slide.appendChild(el);
+    scroll.appendChild(slide);
+  });
+  document.getElementById('lbCount').textContent = `1 / ${images.length}`;
+  document.getElementById('lightbox').classList.add('show');
+  requestAnimationFrame(()=>{ scroll.scrollLeft = startIndex * scroll.clientWidth; });
+  scroll.onscroll = ()=>{
+    const idx = Math.round(scroll.scrollLeft / scroll.clientWidth) + 1;
+    document.getElementById('lbCount').textContent = `${idx} / ${images.length}`;
+  };
+}
+function closeLightbox(){ document.getElementById('lightbox').classList.remove('show'); }
+document.getElementById('lightboxCloseBtn').addEventListener('click', closeLightbox);
+
+/* ---------- File cards (Telegram-stored files) ---------- */
+function fileIcon(name){
+  const ext = (name.split('.').pop()||'').toLowerCase();
+  if(['png','jpg','jpeg','gif','webp'].includes(ext)) return '🖼️';
+  if(['pdf'].includes(ext)) return '📕';
+  if(['doc','docx'].includes(ext)) return '📄';
+  if(['xls','xlsx','csv'].includes(ext)) return '📊';
+  if(['zip','rar','7z'].includes(ext)) return '🗜️';
+  if(['mp3','wav','m4a'].includes(ext)) return '🎵';
+  if(['mp4','mov','avi'].includes(ext)) return '🎬';
+  return '📁';
+}
+function formatBytes(n){
+  if(!n) return '';
+  if(n < 1024) return n+' B';
+  if(n < 1024*1024) return (n/1024).toFixed(1)+' KB';
+  return (n/1024/1024).toFixed(1)+' MB';
+}
+function buildFileCard(f){
+  const card = document.createElement('div');
+  card.className = 'file-card';
+  card.innerHTML = `
+    <div class="fc-icon">${fileIcon(f.name)}</div>
+    <div class="fc-info">
+      <div class="fc-name">${escapeHtml(f.name)}</div>
+      <div class="fc-tag">${escapeHtml(f.tag||'')}${f.size?' • '+formatBytes(f.size):''}</div>
+    </div>
+    <button class="fc-dl">Download</button>`;
+  const btn = card.querySelector('.fc-dl');
+  btn.addEventListener('click', ()=> downloadStoredFile(f, btn));
+  return card;
+}
+async function downloadStoredFile(record, btn){
+  const original = btn.textContent;
+  btn.disabled = true; btn.textContent = '…';
+  try{
+    const info = await tgCall('getFile', { file_id: record.fileId });
+    if(!info.ok) throw new Error('File not found on Telegram');
+    const fileUrl = `https://api.telegram.org/file/bot${TG_BOT_TOKEN}/${info.result.file_path}`;
+    const res = await fetch(fileUrl);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = record.name || 'file';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+    Sound.download();
+    btn.textContent = 'Saved ✓';
+    setTimeout(()=>{ btn.textContent = original; btn.disabled=false; }, 1800);
+  }catch(e){
+    Sound.error();
+    btn.textContent = 'Failed';
+    setTimeout(()=>{ btn.textContent = original; btn.disabled=false; }, 1800);
+  }
+}
+function searchFiles(query){
+  if(!state.files.length || !query) return [];
+  const words = query.toLowerCase().split(/\W+/).filter(w=>w.length>2);
+  if(!words.length) return [];
+  const scored = state.files.map(f=>{
+    const hay = ((f.name||'')+' '+(f.tag||'')).toLowerCase();
+    let score = 0;
+    words.forEach(w=>{ if(hay.includes(w)) score++; });
+    return { f, score };
+  }).filter(x=>x.score>0);
+  scored.sort((a,b)=>b.score-a.score);
+  return scored.slice(0,3).map(x=>x.f);
+}
+
+/* =========================================================================
+   Live web research — Wikipedia summary, DuckDuckGo instant answer, and
+   Wikimedia Commons images, fetched directly from the browser (all three
+   support CORS with no API key). Only runs when the "Web search" chip is
+   toggled on for a message.
+   ========================================================================= */
+async function fetchWikipedia(query){
+  try{
+    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=1&prop=extracts|info&inprop=url&exintro=1&explaintext=1&exchars=700&format=json&origin=*`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const pages = data && data.query && data.query.pages;
+    if(!pages) return null;
+    const page = Object.values(pages)[0];
+    if(!page || !page.extract) return null;
+    return { title: page.title, extract: page.extract, url: page.fullurl || `https://en.wikipedia.org/wiki/${encodeURIComponent(page.title.replace(/ /g,'_'))}` };
+  }catch(e){ return null; }
+}
+async function fetchDuckDuckGo(query){
+  try{
+    const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1&skip_disambig=1`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const abstract = data.AbstractText || (data.RelatedTopics && data.RelatedTopics[0] && data.RelatedTopics[0].Text) || '';
+    if(!abstract) return null;
+    return { text: abstract, url: data.AbstractURL || 'https://duckduckgo.com/?q='+encodeURIComponent(query), source: data.AbstractSource || 'DuckDuckGo' };
+  }catch(e){ return null; }
+}
+async function fetchCommonsImages(query, limit=8){
+  try{
+    const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(query)}&gsrlimit=${limit}&prop=imageinfo&iiprop=url&iiurlwidth=900&format=json&origin=*`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const pages = data && data.query && data.query.pages;
+    if(!pages) return [];
+    return Object.values(pages)
+      .filter(p=>p.imageinfo && p.imageinfo[0])
+      .map(p=>({
+        title: (p.title||'').replace(/^File:/,''),
+        thumb: p.imageinfo[0].thumburl || p.imageinfo[0].url,
+        full: p.imageinfo[0].url
+      }));
+  }catch(e){ return []; }
+}
+async function gatherWebContext(query){
+  const [wiki, ddg, images] = await Promise.all([
+    fetchWikipedia(query), fetchDuckDuckGo(query), fetchCommonsImages(query)
+  ]);
+  let contextText = '';
+  const sources = [];
+  if(wiki){ contextText += `Wikipedia — ${wiki.title}: ${wiki.extract}\n\n`; sources.push({label:'Wikipedia: '+wiki.title, url:wiki.url}); }
+  if(ddg){ contextText += `DuckDuckGo (${ddg.source}): ${ddg.text}\n\n`; sources.push({label:ddg.source||'DuckDuckGo', url:ddg.url}); }
+  return { contextText: contextText.trim(), images, sources };
 }
 
 /* =========================================================================
@@ -582,6 +969,9 @@ async function syncIndexToTelegram(){
       updatedAt: Date.now(),
       instructions: state.instructions,
       memories: state.memories.slice(-40),
+      files: state.files.slice(-30).map(f => ({
+        name:f.name, tag:f.tag, fileId:f.fileId, msgId:f.msgId, size:f.size, ts:f.ts
+      })),
       sessions: state.sessions.slice(-25).map(s => ({
         id:s.id, title:s.title, updatedAt:s.updatedAt,
         count:(state.messagesBySession[s.id]||[]).length
@@ -589,8 +979,9 @@ async function syncIndexToTelegram(){
     };
     let text = JSON.stringify(payload);
     if(text.length > 3900){
-      // trim oldest memories first if payload is too large for a single message
+      // trim oldest memories/files first if payload is too large for a single message
       payload.memories = payload.memories.slice(-15);
+      payload.files = payload.files.slice(-15);
       text = JSON.stringify(payload);
     }
     const sent = await tgCall('sendMessage', {
@@ -746,10 +1137,7 @@ function renderChat(){
     } else {
       const row = document.createElement('div');
       row.className = 'msg-row';
-      const block = document.createElement('div');
-      block.className = 'ai-block';
-      renderAiContent(block, m.content);
-      row.appendChild(block);
+      buildAiMessageDOM(row, m);
       scroll.appendChild(row);
     }
   });
@@ -798,14 +1186,21 @@ async function sendMessage(){
   scroll.appendChild(aiRow);
   scroll.scrollTop = scroll.scrollHeight;
 
+  const matchedFiles = searchFiles(text);
+
   try{
-    const messages = buildPromptMessages(sid);
+    let webContext = { contextText:'', images:[], sources:[] };
+    if(webSearchActive){
+      aiBlock.innerHTML = '<div class="searching-note"><span class="mini-spin"></span> Searching Wikipedia, DuckDuckGo &amp; Commons…</div>';
+      webContext = await gatherWebContext(text);
+      aiBlock.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+    }
+
+    const messages = buildPromptMessages(sid, webContext.contextText, matchedFiles);
     let full = '';
-    let streamed = false;
 
     const resp = await puter.ai.chat(messages, { stream:true });
     if(resp && typeof resp[Symbol.asyncIterator] === 'function'){
-      streamed = true;
       aiBlock.innerHTML = '<span class="live-text"></span><span class="ai-cursor"></span>';
       const liveText = aiBlock.querySelector('.live-text');
       let first = true;
@@ -827,9 +1222,14 @@ async function sendMessage(){
       await typeReveal(aiBlock, full);
     }
 
-    renderAiContent(aiBlock, full);
+    const aiMsg = {
+      role:'assistant', content:full, ts:Date.now(),
+      images: webContext.images, sources: webContext.sources, files: matchedFiles
+    };
+    buildAiMessageDOM(aiRow, aiMsg);
+    scroll.scrollTop = scroll.scrollHeight;
 
-    state.messagesBySession[sid].push({role:'assistant', content:full, ts:Date.now()});
+    state.messagesBySession[sid].push(aiMsg);
     touchSession(sid);
     persist();
     renderSessions();
@@ -857,7 +1257,7 @@ async function typeReveal(el, text){
   liveText.textContent = text;
 }
 
-function buildPromptMessages(sid){
+function buildPromptMessages(sid, webContextText, matchedFiles){
   const sys = [];
   if(state.instructions && state.instructions.trim()){
     sys.push(`The user's custom instructions for how you should talk to them: ${state.instructions.trim()}`);
@@ -865,6 +1265,13 @@ function buildPromptMessages(sid){
   if(state.memories.length){
     const recent = state.memories.slice(-12).map(m=>`- ${m.title}: ${m.sub}`).join('\n');
     sys.push(`Relevant things you remember about the user from earlier conversations:\n${recent}`);
+  }
+  if(webContextText){
+    sys.push(`Live web research for this message (Wikipedia/DuckDuckGo). Use it to answer accurately, in your own words, and mention it's from these sources when relevant:\n${webContextText}`);
+  }
+  if(matchedFiles && matchedFiles.length){
+    const list = matchedFiles.map(f=>`- "${f.name}" (${f.tag||'no description'})`).join('\n');
+    sys.push(`These files the user previously saved to storage match this message — the app is already showing download cards for them below your reply, so naturally acknowledge you found them (don't repeat file names as fake links):\n${list}`);
   }
   const messages = [];
   if(sys.length){
@@ -940,6 +1347,12 @@ document.getElementById('tgRetrieveBtn').addEventListener('click', async ()=>{
         data.memories.forEach(m=>{
           const dup = state.memories.some(x=>x.title.toLowerCase()===String(m.title).toLowerCase());
           if(!dup) state.memories.push(m);
+        });
+      }
+      if(Array.isArray(data.files)){
+        data.files.forEach(f=>{
+          const dup = state.files.some(x=>x.fileId===f.fileId);
+          if(!dup) state.files.push({ id: 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,7), ...f });
         });
       }
       if(typeof data.instructions === 'string' && !state.instructions){
@@ -1073,6 +1486,86 @@ chatInput.addEventListener('keydown', (e)=>{
   if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
 });
 document.getElementById('sendBtn').addEventListener('click', sendMessage);
+
+/* ---------- Web search toggle chip ---------- */
+let webSearchActive = false;
+const webSearchChip = document.getElementById('webSearchChip');
+webSearchChip.addEventListener('click', ()=>{
+  webSearchActive = !webSearchActive;
+  Sound.toggle();
+  webSearchChip.classList.toggle('active', webSearchActive);
+});
+
+/* ---------- Save-file modal ---------- */
+let pickedFile = null;
+const attachOverlay = document.getElementById('attachOverlay');
+const attachModal = document.getElementById('attachModal');
+const fileInput = document.getElementById('fileInput');
+const filePickBtn = document.getElementById('filePickBtn');
+const fileTagInput = document.getElementById('fileTagInput');
+const attachSaveBtn = document.getElementById('attachSaveBtn');
+
+function openAttachModal(){
+  Sound.open();
+  pickedFile = null; fileInput.value=''; fileTagInput.value='';
+  filePickBtn.textContent = '📎 Choose a file';
+  filePickBtn.classList.remove('has-file');
+  attachOverlay.classList.add('show');
+  attachModal.classList.add('show');
+}
+function closeAttachModal(){
+  attachOverlay.classList.remove('show');
+  attachModal.classList.remove('show');
+}
+document.getElementById('attachChip').addEventListener('click', openAttachModal);
+document.getElementById('attachCancelBtn').addEventListener('click', closeAttachModal);
+attachOverlay.addEventListener('click', closeAttachModal);
+filePickBtn.addEventListener('click', ()=> fileInput.click());
+fileInput.addEventListener('change', ()=>{
+  const f = fileInput.files[0];
+  if(!f) return;
+  pickedFile = f;
+  filePickBtn.textContent = '📎 ' + f.name + ' (' + formatBytes(f.size) + ')';
+  filePickBtn.classList.add('has-file');
+});
+
+attachSaveBtn.addEventListener('click', async ()=>{
+  if(!pickedFile){ Sound.error(); filePickBtn.style.borderColor='var(--red)'; setTimeout(()=>filePickBtn.style.borderColor='',900); return; }
+  if(pickedFile.size > 45*1024*1024){ // Telegram bot upload limit
+    Sound.error();
+    fileTagInput.placeholder = 'File too large (45MB Telegram limit)';
+    return;
+  }
+  const tag = fileTagInput.value.trim();
+  attachSaveBtn.disabled = true;
+  attachSaveBtn.textContent = 'Uploading…';
+  try{
+    const form = new FormData();
+    form.append('chat_id', TG_CHAT_ID);
+    form.append('document', pickedFile, pickedFile.name);
+    if(tag) form.append('caption', tag.slice(0,1024));
+    const res = await fetch(`${TG_API}/sendDocument`, { method:'POST', body: form });
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.description || 'Upload failed');
+    const doc = data.result.document;
+    state.files.push({
+      id: uid(), name: pickedFile.name, tag, fileId: doc.file_id,
+      msgId: data.result.message_id, size: doc.file_size || pickedFile.size,
+      mime: pickedFile.type, ts: Date.now()
+    });
+    persist();
+    scheduleSync();
+    Sound.download();
+    closeAttachModal();
+  }catch(e){
+    Sound.error();
+    attachSaveBtn.textContent = 'Failed — tap to retry';
+  }finally{
+    attachSaveBtn.disabled = false;
+    if(attachSaveBtn.textContent === 'Uploading…') attachSaveBtn.textContent = 'Save to Telegram';
+    setTimeout(()=>{ if(!attachModal.classList.contains('show')) attachSaveBtn.textContent = 'Save to Telegram'; }, 2000);
+  }
+});
 
 /* =========================================================================
    Boot
