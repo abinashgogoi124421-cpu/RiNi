@@ -1196,10 +1196,17 @@ async function sendMessage(){
       aiBlock.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
     }
 
-    const messages = buildPromptMessages(sid, webContext.contextText, matchedFiles);
+    const messages = buildPromptMessages(sid, webContext.contextText, matchedFiles, webSearchActive);
     let full = '';
 
-    const resp = await puter.ai.chat(messages, { stream:true });
+    // When Web search is toggled on, also give Puter's own AI live browsing
+    // via its built-in web_search tool (OpenAI models only) — the model
+    // decides when to actually search, no client-side tool loop needed.
+    const chatOptions = webSearchActive
+      ? { model:'openai/gpt-5.6-luna', tools:[{ type:'web_search' }], stream:true }
+      : { stream:true };
+
+    const resp = await puter.ai.chat(messages, chatOptions);
     if(resp && typeof resp[Symbol.asyncIterator] === 'function'){
       aiBlock.innerHTML = '<span class="live-text"></span><span class="ai-cursor"></span>';
       const liveText = aiBlock.querySelector('.live-text');
@@ -1257,7 +1264,7 @@ async function typeReveal(el, text){
   liveText.textContent = text;
 }
 
-function buildPromptMessages(sid, webContextText, matchedFiles){
+function buildPromptMessages(sid, webContextText, matchedFiles, liveSearchEnabled){
   const sys = [];
   if(state.instructions && state.instructions.trim()){
     sys.push(`The user's custom instructions for how you should talk to them: ${state.instructions.trim()}`);
@@ -1266,8 +1273,11 @@ function buildPromptMessages(sid, webContextText, matchedFiles){
     const recent = state.memories.slice(-12).map(m=>`- ${m.title}: ${m.sub}`).join('\n');
     sys.push(`Relevant things you remember about the user from earlier conversations:\n${recent}`);
   }
+  if(liveSearchEnabled){
+    sys.push(`You have a live web_search tool available for this message — use it whenever the question needs current, specific, or verifiable information instead of guessing.`);
+  }
   if(webContextText){
-    sys.push(`Live web research for this message (Wikipedia/DuckDuckGo). Use it to answer accurately, in your own words, and mention it's from these sources when relevant:\n${webContextText}`);
+    sys.push(`Additional web research already pulled for this message (Wikipedia/DuckDuckGo). Use it to answer accurately, in your own words, and mention it's from these sources when relevant:\n${webContextText}`);
   }
   if(matchedFiles && matchedFiles.length){
     const list = matchedFiles.map(f=>`- "${f.name}" (${f.tag||'no description'})`).join('\n');
