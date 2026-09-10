@@ -6,7 +6,7 @@ A single-page installable PWA: one continuous chat with an AI (via [Puter.js](ht
 
 | File | Purpose |
 |---|---|
-| `index.html` | The entire app — UI, chat logic, Puter.js AI calls, Telegram sync, sounds. Everything is inline (one file), per your single-file preference. |
+| `index.html` | The entire app — UI, chat logic, sessions, Puter.js AI calls, Telegram sync, sounds. Everything is inline (one file), per your single-file preference. |
 | `manifest.json` | PWA metadata (name, icons, colors, install behavior). |
 | `sw.js` | Service worker — caches the app shell so it opens instantly and works semi-offline once installed. |
 | `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` | App icons, sitting flat alongside everything else — no subfolder. |
@@ -23,8 +23,14 @@ That means: **if this repo is public, anyone who views the page source has your 
 
 ## How the pieces work
 
-### One continuous chat (no sessions, no drawer)
-There's a single ongoing conversation — no "new chat" button, no sidebar. Everything you've ever said to RiNi lives in one thread, stored locally and backed up to Telegram (see below).
+### Sessions (with a shared brain across all of them)
+Tap the hamburger icon to open the drawer: **New Chat** starts a fresh thread, and past sessions are listed below it (tap to switch, ✕ to delete). Each session's messages are separate — but **memories and custom instructions are global**, shared across every session, so RiNi doesn't "forget you" just because you started a new chat.
+
+### Clear chat
+The trash icon in the chat header wipes the messages in the **currently open session** (with a confirmation first). This only clears what's shown in the app — RiNi's extracted memories and the permanent Telegram transcript log are untouched, and the next background sync updates the cloud backup to match the cleared state too.
+
+### Readable while it's still typing
+Long replies used to render as a raw, unformatted blob that only "snapped" into proper markdown once the whole response finished — which could look broken mid-stream. Now the reply is re-rendered as clean, word-wrapped, formatted markdown every ~140ms while it streams in, so it stays readable the entire time, not just at the end.
 
 ### AI chat (Puter.js) — completely free
 Loaded via `<script src="https://js.puter.com/v2/">`. Calls `puter.ai.chat(messages, {stream:true})` with **no model pinned**, so it always uses whichever model Puter provides for free by default — streamed in with a typing-cursor animation, then re-rendered as formatted markdown (bold/italic/lists/tables), syntax-highlighted code blocks, and **LaTeX math** (`$...$` inline, `$$...$$` display) once the stream finishes.
