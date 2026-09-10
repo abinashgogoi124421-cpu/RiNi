@@ -13,12 +13,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RiNi">
 
-<!-- Puter.js — auth + AI + live web search, no API keys, no backend -->
+<!-- Puter.js — auth + free AI chat, no API keys, no backend -->
 <script src="https://js.puter.com/v2/" id="puterScript" onerror="window.__puterScriptError && window.__puterScriptError()"></script>
 <script>
-  // If the Puter script fails outright (blocked domain, offline, etc.),
-  // retry loading it once before giving up — transient network hiccups
-  // are common on mobile, and one retry fixes most of them.
   let __puterRetried = false;
   window.__puterScriptError = function(){
     if(__puterRetried){ window.dispatchEvent(new Event('rini:puter-load-failed')); return; }
@@ -40,125 +37,81 @@
 
 <style>
 :root{
-  --bg:#0b0b12;
-  --bg-elevated:#15151f;
-  --bg-card:#1a1a26;
-  --border:#26263a;
-  --text:#f2f2f7;
-  --text-dim:#9a9ab0;
-  --text-faint:#65657a;
-  --accent:#4f6bff;
-  --accent-2:#7c5cff;
-  --accent-soft:rgba(79,107,255,.16);
-  --green:#3ddc84;
-  --red:#ff5d5d;
-  --safe-top:env(safe-area-inset-top,0px);
-  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#0b0b12; --bg-elevated:#15151f; --bg-card:#1a1a26; --border:#26263a;
+  --text:#f2f2f7; --text-dim:#9a9ab0; --text-faint:#65657a;
+  --accent:#4f6bff; --accent-2:#7c5cff; --accent-soft:rgba(79,107,255,.16);
+  --green:#3ddc84; --red:#ff5d5d;
+  --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
 }
 [data-theme="light"]{
-  --bg:#f4f4f8;
-  --bg-elevated:#ffffff;
-  --bg-card:#ffffff;
-  --border:#e3e3ee;
-  --text:#16161f;
-  --text-dim:#5c5c70;
-  --text-faint:#9797a8;
-  --accent-soft:rgba(79,107,255,.10);
+  --bg:#f4f4f8; --bg-elevated:#ffffff; --bg-card:#ffffff; --border:#e3e3ee;
+  --text:#16161f; --text-dim:#5c5c70; --text-faint:#9797a8; --accent-soft:rgba(79,107,255,.10);
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{height:100%;}
 body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  overflow:hidden;
-  transition:background .25s ease,color .25s ease;
+  margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg); color:var(--text); overflow:hidden; transition:background .25s ease,color .25s ease;
 }
 #app{
-  height:100vh; height:100dvh;
-  display:flex; flex-direction:column; position:relative;
+  height:100vh; height:100dvh; display:flex; flex-direction:column; position:relative;
   max-width:640px; margin:0 auto; background:var(--bg);
 }
 button{font-family:inherit;}
 ::-webkit-scrollbar{width:0;height:0;}
 
-/* ---------- Top bar ---------- */
 .topbar{
-  padding:calc(var(--safe-top) + 14px) 16px 12px;
-  display:flex; align-items:center; gap:12px;
-  border-bottom:1px solid var(--border); background:var(--bg);
-  flex-shrink:0; z-index:20;
+  padding:calc(var(--safe-top) + 14px) 16px 12px; display:flex; align-items:center; gap:10px;
+  border-bottom:1px solid var(--border); background:var(--bg); flex-shrink:0; z-index:20;
 }
-.topbar-logo{
-  width:36px;height:36px;border-radius:50%;flex-shrink:0;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  display:flex;align-items:center;justify-content:center;font-size:16px;
+.icon-btn{
+  width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:transparent;border:none;color:var(--text);cursor:pointer;flex-shrink:0;
 }
-.topbar h1{font-size:19px;margin:0;font-weight:700;}
-.topbar-sub{font-size:12px;color:var(--text-dim);}
+.icon-btn:active{background:var(--bg-card);}
+.topbar h1{font-size:19px;margin:0;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topbar-sub{font-size:12px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topbar-mid{flex:1;min-width:0;}
+.topbar-actions{display:flex;gap:2px;flex-shrink:0;}
 
-/* ---------- Tab panels ---------- */
 .panels{flex:1;min-height:0;position:relative;}
 .panel{position:absolute;inset:0;display:none;flex-direction:column;height:100%;}
 .panel.active{display:flex;}
 
-/* ---------- Bottom nav ---------- */
-.bottomnav{
-  display:flex; border-top:1px solid var(--border); background:var(--bg-elevated);
-  padding-bottom:var(--safe-bottom); flex-shrink:0; z-index:20;
-}
-.navbtn{
-  flex:1; display:flex;flex-direction:column;align-items:center;gap:4px;
-  padding:10px 0 8px; background:none;border:none;color:var(--text-faint);
-  cursor:pointer;font-size:11px;font-weight:600;
-}
+.bottomnav{display:flex;border-top:1px solid var(--border);background:var(--bg-elevated);padding-bottom:var(--safe-bottom);flex-shrink:0;z-index:20;}
+.navbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 8px;background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:11px;font-weight:600;}
 .navbtn svg{width:22px;height:22px;}
 .navbtn.active{color:var(--accent);}
 
 /* ================= CHAT ================= */
-.chat-scroll{
-  flex:1;overflow-y:auto;padding:16px 14px 10px;
-  display:flex;flex-direction:column;gap:16px;
-}
+.chat-scroll{flex:1;overflow-y:auto;padding:16px 14px 10px;display:flex;flex-direction:column;gap:16px;}
 .msg-row{display:flex;flex-direction:column;gap:4px;max-width:100%;}
 .msg-row.user{align-items:flex-end;}
 .bubble-user{
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  color:#fff; padding:11px 15px; border-radius:18px 18px 4px 18px;
-  max-width:82%; font-size:15px;line-height:1.45;
-  white-space:pre-wrap;word-wrap:break-word;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#fff; padding:11px 15px;
+  border-radius:18px 18px 4px 18px; max-width:82%; font-size:15px;line-height:1.45;
+  white-space:pre-wrap; overflow-wrap:break-word; word-wrap:break-word;
 }
 .msg-time{font-size:11px;color:var(--text-faint);padding:0 4px;}
-.ai-block{width:100%;font-size:15px;line-height:1.6;}
+.ai-block{width:100%;font-size:15px;line-height:1.6;overflow-wrap:break-word;word-wrap:break-word;}
 .ai-block p{margin:0 0 10px;}
 .ai-block p:last-child{margin-bottom:0;}
 .ai-block ul,.ai-block ol{margin:6px 0 12px;padding-left:22px;}
 .ai-block li{margin-bottom:4px;}
 .ai-block strong{color:var(--text);font-weight:700;}
-.ai-block em{color:var(--text);font-style:italic;} /* bright, not dulled */
-.ai-block code{
-  background:var(--bg-card);border:1px solid var(--border);
-  padding:2px 6px;border-radius:6px;font-size:.88em;
-}
-.ai-block pre{
-  background:#0d0d16;border:1px solid var(--border);
-  border-radius:10px;padding:12px 14px;overflow-x:auto;margin:10px 0;
-}
+.ai-block em{color:var(--text);font-style:italic;}
+.ai-block code{background:var(--bg-card);border:1px solid var(--border);padding:2px 6px;border-radius:6px;font-size:.88em;overflow-wrap:anywhere;}
+.ai-block pre{background:#0d0d16;border:1px solid var(--border);border-radius:10px;padding:12px 14px;overflow-x:auto;margin:10px 0;}
 .ai-block pre code{background:none;border:none;padding:0;}
 .ai-block table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13.5px;overflow-x:auto;display:block;}
 .ai-block th,.ai-block td{border:1px solid var(--border);padding:7px 10px;text-align:left;}
 .ai-block th{background:var(--bg-card);font-weight:700;}
 .ai-block blockquote{border-left:3px solid var(--accent);margin:8px 0;padding:2px 12px;color:var(--text-dim);}
-/* KaTeX: force full brightness on both themes — the default KaTeX
-   stylesheet renders near-black glyphs, which are invisible on a dark
-   background unless overridden. */
 .ai-block .katex{color:var(--text) !important;font-size:1.05em;}
-.ai-block .katex * {color:inherit !important;}
+.ai-block .katex *{color:inherit !important;}
 .ai-block .katex-display{margin:12px 0;overflow-x:auto;overflow-y:hidden;}
 
-.ai-cursor{display:inline-block;width:7px;height:1em;background:var(--accent);
-  vertical-align:text-bottom;margin-left:2px;animation:blink 1s step-end infinite;}
+.ai-cursor{display:inline-block;width:7px;height:1em;background:var(--accent);vertical-align:text-bottom;margin-left:2px;animation:blink 1s step-end infinite;}
 @keyframes blink{50%{opacity:0;}}
 .typing-dots{display:flex;gap:4px;padding:6px 0;}
 .typing-dots span{width:7px;height:7px;border-radius:50%;background:var(--text-faint);animation:bounce 1.2s infinite ease-in-out;}
@@ -169,38 +122,44 @@ button{font-family:inherit;}
 .searching-note .mini-spin{width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-/* ---------- AI message footer (copy button) ---------- */
 .ai-footer{display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:2px;}
-.ai-action{
-  display:flex;align-items:center;gap:6px;
-  background:none;border:1px solid var(--border);color:var(--text-dim);
-  padding:6px 12px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;
-}
+.ai-action{display:flex;align-items:center;gap:6px;background:none;border:1px solid var(--border);color:var(--text-dim);padding:6px 12px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;}
 .ai-action svg{width:14px;height:14px;}
 .ai-action.copied{color:var(--green);border-color:var(--green);}
 .ai-time{font-size:11px;color:var(--text-faint);margin-left:auto;}
 .src-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
 .src-chip{font-size:11.5px;color:var(--accent);text-decoration:none;background:var(--accent-soft);padding:5px 10px;border-radius:14px;font-weight:600;}
 
-.composer{
-  display:flex;align-items:flex-end;gap:10px;
-  padding:10px 12px calc(10px + var(--safe-bottom));
-  border-top:1px solid var(--border); background:var(--bg-elevated); flex-shrink:0;
-}
-.composer textarea{
-  flex:1;resize:none;max-height:120px;min-height:42px;
-  background:var(--bg-card);color:var(--text);
-  border:1px solid var(--border);border-radius:22px;
-  padding:11px 16px;font-size:15px;line-height:1.3;font-family:inherit;outline:none;
-}
+.composer{display:flex;align-items:flex-end;gap:10px;padding:10px 12px calc(10px + var(--safe-bottom));border-top:1px solid var(--border);background:var(--bg-elevated);flex-shrink:0;}
+.composer textarea{flex:1;resize:none;max-height:120px;min-height:42px;background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:22px;padding:11px 16px;font-size:15px;line-height:1.3;font-family:inherit;outline:none;}
 .composer textarea::placeholder{color:var(--text-faint);}
-.send-btn{
-  width:44px;height:44px;border-radius:50%;flex-shrink:0;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;
-}
+.send-btn{width:44px;height:44px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--accent),var(--accent-2));border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;}
 .send-btn:disabled{opacity:.45;}
 .send-btn svg{width:19px;height:19px;margin-left:2px;}
+
+/* ---------- Drawer (sessions) ---------- */
+.drawer-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:29;}
+.drawer-overlay.show{opacity:1;pointer-events:auto;}
+.drawer{
+  position:absolute;top:0;left:0;bottom:0;width:78%;max-width:300px;background:var(--bg-elevated);
+  border-right:1px solid var(--border);transform:translateX(-105%);transition:transform .25s ease;
+  z-index:30;display:flex;flex-direction:column;padding-top:var(--safe-top);
+}
+.drawer.show{transform:translateX(0);}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 10px;}
+.drawer-head h2{font-size:17px;margin:0;}
+.new-chat-btn{
+  margin:6px 16px 12px;padding:12px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-weight:700;font-size:14.5px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.drawer-section-label{font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--text-faint);padding:6px 16px;}
+.session-list{overflow-y:auto;flex:1;padding:0 10px 16px;}
+.session-item{padding:11px 12px;border-radius:12px;cursor:pointer;margin-bottom:3px;}
+.session-item.active{background:var(--accent-soft);}
+.session-item .stitle{font-size:14.5px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.session-item .smeta{font-size:12px;color:var(--text-dim);}
+.session-item .sdelete{float:right;color:var(--text-faint);background:none;border:none;font-size:16px;cursor:pointer;padding:2px 4px;}
 
 /* ================= MEMORIES ================= */
 #panel-memories .scroll{flex:1;overflow-y:auto;padding:8px 16px 24px;}
@@ -218,10 +177,7 @@ button{font-family:inherit;}
 .tl-item .tl-title{font-size:15.5px;font-weight:700;margin-bottom:3px;}
 .tl-item .tl-sub{font-size:13.5px;color:var(--text-dim);}
 .empty-hint{color:var(--text-faint);font-size:13.5px;padding:6px 0 20px;}
-.tg-btn{
-  display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px;border-radius:26px;border:none;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-top:6px;
-}
+.tg-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px;border-radius:26px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-top:6px;}
 .tg-btn svg{width:19px;height:19px;}
 .tg-btn .spin{animation:spin 1s linear infinite;}
 
@@ -241,29 +197,19 @@ button{font-family:inherit;}
 .status-text.off{color:var(--text-dim);}
 .status-sub{font-size:12px;color:var(--text-faint);margin-left:auto;}
 .card-sub{font-size:13px;color:var(--text-dim);line-height:1.4;margin-bottom:2px;}
-.primary-btn{
-  width:100%;padding:13px;border-radius:13px;border:none;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-weight:700;font-size:14.5px;cursor:pointer;margin-top:8px;
-}
+.primary-btn{width:100%;padding:13px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-weight:700;font-size:14.5px;cursor:pointer;margin-top:8px;}
 .user-chip{display:flex;align-items:center;gap:10px;margin-top:4px;}
-.user-avatar{
-  width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;
-}
-textarea.instr{
-  width:100%;min-height:70px;background:var(--bg);color:var(--text);
-  border:1px solid var(--border);border-radius:12px;padding:12px;font-size:14px;font-family:inherit;resize:vertical;outline:none;
-}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;}
+textarea.instr{width:100%;min-height:70px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px;font-size:14px;font-family:inherit;resize:vertical;outline:none;}
 textarea.instr::placeholder{color:var(--text-faint);}
-.badge{
-  display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent);
-  padding:8px 13px;border-radius:20px;font-size:13px;font-weight:700;margin-top:8px;
-}
+.badge{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent);padding:8px 13px;border-radius:20px;font-size:13px;font-weight:700;margin-top:8px;}
 .seg{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:3px;}
 .seg button{flex:1;border:none;background:none;color:var(--text-dim);padding:9px 0;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
 .seg button.active{background:var(--accent);color:#fff;}
 .appearance-row{display:flex;justify-content:space-between;align-items:center;}
 .about-line{font-size:12px;color:var(--text-faint);text-align:center;margin-top:6px;}
+
+@media (min-width:520px){ .drawer{max-width:320px;} }
 </style>
 </head>
 <body data-theme="dark">
@@ -272,10 +218,17 @@ textarea.instr::placeholder{color:var(--text-faint);}
   <!-- ================= CHAT PANEL ================= -->
   <div class="panel active" id="panel-chat">
     <div class="topbar">
-      <div class="topbar-logo">✨</div>
-      <div>
-        <h1>RiNi</h1>
-        <div class="topbar-sub">Live web access • Remembers everything</div>
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Sessions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+      <div class="topbar-mid">
+        <h1 id="topbarTitle">RiNi</h1>
+        <div class="topbar-sub" id="sessionSub">New chat</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="clearChatBtn" aria-label="Clear chat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+        </button>
       </div>
     </div>
 
@@ -307,10 +260,8 @@ textarea.instr::placeholder{color:var(--text-faint);}
           <div class="mc-sub">Updating insights</div>
         </div>
       </div>
-
       <div class="section-title">Memory timeline</div>
       <div class="timeline" id="memTimeline"></div>
-
       <button class="tg-btn" id="tgRetrieveBtn">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.7L2.9 11c-1.2.5-1.2 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.9.9.9.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.8l3-14c.3-1.2-.4-1.7-1.2-1z"/></svg>
         <span id="tgRetrieveLabel">Telegram cloud retrieval</span>
@@ -324,7 +275,6 @@ textarea.instr::placeholder{color:var(--text-faint);}
   <div class="panel" id="panel-settings">
     <div class="topbar"><h1>Settings</h1></div>
     <div class="scroll">
-
       <div class="card">
         <div class="card-head"><span class="ch-icon">☁️</span><h3>Cloud Status</h3></div>
         <div class="kv-row"><span class="kv-label">Channel ID</span></div>
@@ -356,7 +306,7 @@ textarea.instr::placeholder{color:var(--text-faint);}
 
       <div class="card">
         <div class="card-head"><span class="ch-icon">🧠✨</span><h3>Memory Intelligence</h3></div>
-        <div class="card-sub">AI learns from every chat automatically • live web search when needed</div>
+        <div class="card-sub">Shared across every chat session • AI learns from every message automatically</div>
         <div class="badge">🗄️ <span id="memIndexedCount">0</span> memories indexed</div>
       </div>
 
@@ -371,9 +321,25 @@ textarea.instr::placeholder{color:var(--text-faint);}
         </div>
       </div>
 
-      <div class="about-line">RiNi · Puter.js AI with live web search + Telegram cloud memory</div>
+      <div class="about-line">RiNi · Puter.js AI + Telegram cloud memory</div>
     </div>
     <div class="bottomnav" id="bottomnav2"></div>
+  </div>
+
+  <!-- Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-head"><h2>Sessions</h2>
+      <button class="icon-btn" id="drawerCloseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    </div>
+    <button class="new-chat-btn" id="newChatBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Chat
+    </button>
+    <div class="drawer-section-label">RECENT — memories &amp; instructions are shared across all of these</div>
+    <div class="session-list" id="sessionList"></div>
   </div>
 
 </div>
@@ -407,7 +373,8 @@ function waitForPuter(timeoutMs = 10000){
 }
 
 /* =========================================================================
-   Storage — one continuous conversation (no sessions), memories, instructions
+   Storage — multiple chat sessions, but memories/instructions are GLOBAL
+   (shared across every session), exactly as requested.
    ========================================================================= */
 const Store = {
   get(key, fallback){ try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }catch(e){ return fallback; } },
@@ -415,13 +382,17 @@ const Store = {
 };
 
 let state = {
-  messages: Store.get('rini_messages_v2', []),   // [{role,content,ts,sources}]
-  memories: Store.get('rini_memories', []),      // [{title,sub,ts}]
-  instructions: localStorage.getItem('rini_instructions') || '',
+  sessions: Store.get('rini_sessions', []),          // [{id,title,createdAt,updatedAt}]
+  messagesBySession: Store.get('rini_messages', {}), // {sessionId:[{role,content,ts,sources}]}
+  currentSessionId: Store.get('rini_current_session', null),
+  memories: Store.get('rini_memories', []),          // GLOBAL — shared across sessions
+  instructions: localStorage.getItem('rini_instructions') || '', // GLOBAL
   theme: localStorage.getItem('rini_theme') || 'dark'
 };
 function persist(){
-  Store.set('rini_messages_v2', state.messages);
+  Store.set('rini_sessions', state.sessions);
+  Store.set('rini_messages', state.messagesBySession);
+  Store.set('rini_current_session', state.currentSessionId);
   Store.set('rini_memories', state.memories);
 }
 
@@ -451,7 +422,8 @@ const Sound = {
   toggle(){ tone(880,.04,'sine',.03); },
   open(){ tone(420,.06,'sine',.03); tone(560,.06,'sine',.025,.04); },
   error(){ tone(180,.18,'sawtooth',.03); },
-  copy(){ tone(1040,.05,'sine',.03); }
+  copy(){ tone(1040,.05,'sine',.03); },
+  clear(){ tone(300,.08,'sine',.03); tone(220,.12,'sine',.03,.08); }
 };
 
 /* =========================================================================
@@ -475,7 +447,7 @@ function renderAiContent(el, raw){
 }
 
 /* =========================================================================
-   AI message chrome — content + sources + a clear "copy" footer
+   AI message chrome — content + sources + copy footer
    ========================================================================= */
 function buildAiMessageDOM(row, msg){
   row.innerHTML = '';
@@ -534,158 +506,9 @@ function fallbackCopy(text, done){
     done();
   }catch(e){}
 }
-
 function escapeHtml(s){
   return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-
-/* =========================================================================
-   Telegram cloud sync — full backup (all messages + memories + instructions)
-   plus a compact pinned index pointing at it, so a reinstall or new device
-   auto-restores everything.
-   ========================================================================= */
-async function tgCall(method, params){
-  const res = await fetch(`${TG_API}/${method}`, {
-    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(params)
-  });
-  return res.json();
-}
-
-let tgSyncTimer = null;
-function scheduleSync(){ clearTimeout(tgSyncTimer); tgSyncTimer = setTimeout(fullSync, 3000); }
-
-async function uploadFullBackup(){
-  if(!state.messages.length) return { fileId:null, msgId:null };
-  const backup = { v:3, exportedAt:Date.now(), messages:state.messages, memories:state.memories, instructions:state.instructions };
-  const blob = new Blob([JSON.stringify(backup)], { type:'application/json' });
-  const form = new FormData();
-  form.append('chat_id', TG_CHAT_ID);
-  form.append('document', blob, 'rini-backup.json');
-  form.append('caption', 'RiNi full backup — used to auto-restore on reinstall');
-  form.append('disable_notification', 'true');
-  const res = await fetch(`${TG_API}/sendDocument`, { method:'POST', body: form });
-  const data = await res.json();
-  if(!data.ok) return { fileId:null, msgId:null };
-  return { fileId: data.result.document.file_id, msgId: data.result.message_id };
-}
-
-async function fullSync(){
-  setTgStatus('syncing');
-  try{
-    const backupRef = await uploadFullBackup();
-    const payload = {
-      v:3, updatedAt:Date.now(),
-      instructions: state.instructions,
-      memories: state.memories.slice(-40),
-      messageCount: state.messages.length,
-      backupFileId: backupRef.fileId, backupMsgId: backupRef.msgId
-    };
-    let text = JSON.stringify(payload);
-    if(text.length > 3900){ payload.memories = payload.memories.slice(-15); text = JSON.stringify(payload); }
-    const sent = await tgCall('sendMessage', {
-      chat_id: TG_CHAT_ID, text: "```rini-index\n" + text + "\n```",
-      parse_mode: "Markdown", disable_notification: true
-    });
-    if(sent.ok){
-      await tgCall('pinChatMessage', { chat_id: TG_CHAT_ID, message_id: sent.result.message_id, disable_notification: true });
-    }
-    setTgStatus('synced');
-  }catch(e){ setTgStatus('error'); }
-}
-
-// Every exchange is also posted as its own permanent, human-readable message —
-// this is RiNi's permanent memory log: nothing is ever deleted from the
-// channel, and it's fully readable/searchable from inside Telegram itself.
-function logExchangeToTelegram(userText, aiText){
-  const chunk = `🗨️ *You:* ${escapeMd(truncate(userText,600))}\n\n*RiNi:* ${escapeMd(truncate(aiText,2500))}`;
-  tgCall('sendMessage', { chat_id: TG_CHAT_ID, text: chunk, parse_mode:'Markdown', disable_notification:true }).catch(()=>{});
-}
-function escapeMd(s){ return (s||'').replace(/([_*`\[\]])/g,'\\$1'); }
-function truncate(s,n){ return s && s.length>n ? s.slice(0,n)+'…' : (s||''); }
-
-async function fetchPinnedFromTelegram(){
-  const res = await tgCall('getChat', { chat_id: TG_CHAT_ID });
-  if(!res.ok || !res.result.pinned_message) return null;
-  const raw = res.result.pinned_message.text || '';
-  const match = raw.match(/```rini-index\n([\s\S]*?)\n```/);
-  const jsonStr = match ? match[1] : raw;
-  try{ return JSON.parse(jsonStr); }catch(e){ return null; }
-}
-async function fetchFullBackup(index){
-  if(!index || !index.backupFileId) return null;
-  try{
-    const info = await tgCall('getFile', { file_id: index.backupFileId });
-    if(!info.ok) return null;
-    const url = `https://api.telegram.org/file/bot${TG_BOT_TOKEN}/${info.result.file_path}`;
-    const res = await fetch(url);
-    return await res.json();
-  }catch(e){ return null; }
-}
-function mergeRestoredData(full){
-  if(!full) return false;
-  let changed = false;
-  if(Array.isArray(full.messages) && full.messages.length > state.messages.length){
-    state.messages = full.messages; changed = true;
-  }
-  (full.memories||[]).forEach(m=>{
-    const dup = state.memories.some(x=>x.title.toLowerCase()===String(m.title).toLowerCase());
-    if(!dup){ state.memories.push(m); changed = true; }
-  });
-  if(full.instructions && !state.instructions){
-    state.instructions = full.instructions;
-    const box = document.getElementById('instrInput');
-    if(box) box.value = full.instructions;
-    changed = true;
-  }
-  if(changed) persist();
-  return changed;
-}
-async function restoreFromTelegram(){
-  const index = await fetchPinnedFromTelegram();
-  if(!index) return false;
-  const full = await fetchFullBackup(index);
-  return mergeRestoredData(full || index);
-}
-
-function setTgStatus(mode){
-  const dot = document.getElementById('tgStatusDot');
-  const text = document.getElementById('tgStatusText');
-  const sub = document.getElementById('tgStatusSub');
-  if(!dot) return;
-  if(mode==='syncing'){ dot.classList.remove('off'); text.classList.remove('off'); text.textContent='Telegram auto-saving'; sub.textContent='Syncing…'; }
-  else if(mode==='synced'){ dot.classList.remove('off'); text.classList.remove('off'); text.textContent='Telegram auto-saving'; sub.textContent='Active • Synced just now'; }
-  else if(mode==='restoring'){ dot.classList.remove('off'); text.classList.remove('off'); text.textContent='Telegram auto-saving'; sub.textContent='Restoring your data…'; }
-  else if(mode==='error'){ dot.classList.add('off'); text.classList.add('off'); text.textContent='Telegram sync'; sub.textContent='Offline / error'; }
-}
-
-/* =========================================================================
-   Chat rendering + sending — one continuous conversation, always able to
-   search the live web itself.
-   ========================================================================= */
-function renderChat(){
-  const scroll = document.getElementById('chatScroll');
-  scroll.innerHTML = '';
-  state.messages.forEach(m=>{
-    if(m.role==='user'){
-      scroll.appendChild(buildUserBubble(m.content, m.ts));
-    } else {
-      const row = document.createElement('div');
-      row.className = 'msg-row';
-      buildAiMessageDOM(row, m);
-      scroll.appendChild(row);
-    }
-  });
-  scroll.scrollTop = scroll.scrollHeight;
-}
-function buildUserBubble(text, ts){
-  const row = document.createElement('div');
-  row.className = 'msg-row user';
-  row.innerHTML = `<div class="bubble-user">${escapeHtml(text)}</div><div class="msg-time">${new Date(ts||Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>`;
-  return row;
-}
-function autoresizeTextarea(el){ el.style.height='auto'; el.style.height = Math.min(el.scrollHeight,120)+'px'; }
-
-function ainame(){ return 'RiNi'; }
 
 /* =========================================================================
    Local, zero-cost features — no API, no network, no per-user billing.
@@ -695,10 +518,6 @@ function getLocalDateTime(){
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
   return `${now.toLocaleString([], { weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' })} (${tz})`;
 }
-
-// A quick heuristic so free web lookups only fire for messages that could
-// actually use them — skips greetings/small talk so every message doesn't
-// pay a latency cost for nothing.
 const SMALL_TALK = /^(hi|hey|hello|yo|sup|thanks|thank you|thx|ok|okay|cool|nice|lol|haha|bye|good\s?(morning|night|evening)|how are you|what'?s up)[\s!.?]*$/i;
 function isLikelyInformational(text){
   const words = text.trim().split(/\s+/);
@@ -707,7 +526,7 @@ function isLikelyInformational(text){
   return true;
 }
 
-/* ---------- Free, keyless, CORS-enabled: Wikipedia + DuckDuckGo (text only, no images) ---------- */
+/* ---------- Free, keyless, CORS-enabled: Wikipedia + DuckDuckGo (text only) ---------- */
 async function fetchWikipedia(query){
   try{
     const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=1&prop=extracts|info&inprop=url&exintro=1&explaintext=1&exchars=700&format=json&origin=*`;
@@ -739,11 +558,242 @@ async function gatherWebContext(query){
   return { contextText: contextText.trim(), sources };
 }
 
-function buildPromptMessages(webContextText){
+/* =========================================================================
+   Telegram cloud sync — full backup (sessions + messages + memories +
+   instructions), plus a compact pinned index pointing at it.
+   ========================================================================= */
+async function tgCall(method, params){
+  const res = await fetch(`${TG_API}/${method}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(params) });
+  return res.json();
+}
+let tgSyncTimer = null;
+function scheduleSync(){ clearTimeout(tgSyncTimer); tgSyncTimer = setTimeout(fullSync, 3000); }
+
+async function uploadFullBackup(){
+  if(!state.sessions.length) return { fileId:null, msgId:null };
+  const backup = {
+    v:4, exportedAt:Date.now(),
+    sessions:state.sessions, messagesBySession:state.messagesBySession,
+    memories:state.memories, instructions:state.instructions
+  };
+  const blob = new Blob([JSON.stringify(backup)], { type:'application/json' });
+  const form = new FormData();
+  form.append('chat_id', TG_CHAT_ID);
+  form.append('document', blob, 'rini-backup.json');
+  form.append('caption', 'RiNi full backup — used to auto-restore on reinstall');
+  form.append('disable_notification', 'true');
+  const res = await fetch(`${TG_API}/sendDocument`, { method:'POST', body: form });
+  const data = await res.json();
+  if(!data.ok) return { fileId:null, msgId:null };
+  return { fileId: data.result.document.file_id, msgId: data.result.message_id };
+}
+
+async function fullSync(){
+  setTgStatus('syncing');
+  try{
+    const backupRef = await uploadFullBackup();
+    const payload = {
+      v:4, updatedAt:Date.now(),
+      instructions: state.instructions,
+      memories: state.memories.slice(-40),
+      sessions: state.sessions.slice(-25).map(s => ({
+        id:s.id, title:s.title, updatedAt:s.updatedAt, count:(state.messagesBySession[s.id]||[]).length
+      })),
+      backupFileId: backupRef.fileId, backupMsgId: backupRef.msgId
+    };
+    let text = JSON.stringify(payload);
+    if(text.length > 3900){ payload.memories = payload.memories.slice(-15); text = JSON.stringify(payload); }
+    const sent = await tgCall('sendMessage', {
+      chat_id: TG_CHAT_ID, text: "```rini-index\n" + text + "\n```", parse_mode: "Markdown", disable_notification: true
+    });
+    if(sent.ok){
+      await tgCall('pinChatMessage', { chat_id: TG_CHAT_ID, message_id: sent.result.message_id, disable_notification: true });
+    }
+    setTgStatus('synced');
+  }catch(e){ setTgStatus('error'); }
+}
+
+// Permanent, human-readable transcript log — every exchange, forever.
+function logExchangeToTelegram(sessionTitle, userText, aiText){
+  const chunk = `🗨️ *${escapeMd(sessionTitle)}*\n\n*You:* ${escapeMd(truncate(userText,600))}\n\n*RiNi:* ${escapeMd(truncate(aiText,2500))}`;
+  tgCall('sendMessage', { chat_id: TG_CHAT_ID, text: chunk, parse_mode:'Markdown', disable_notification:true }).catch(()=>{});
+}
+function escapeMd(s){ return (s||'').replace(/([_*`\[\]])/g,'\\$1'); }
+function truncate(s,n){ return s && s.length>n ? s.slice(0,n)+'…' : (s||''); }
+
+async function fetchPinnedFromTelegram(){
+  const res = await tgCall('getChat', { chat_id: TG_CHAT_ID });
+  if(!res.ok || !res.result.pinned_message) return null;
+  const raw = res.result.pinned_message.text || '';
+  const match = raw.match(/```rini-index\n([\s\S]*?)\n```/);
+  const jsonStr = match ? match[1] : raw;
+  try{ return JSON.parse(jsonStr); }catch(e){ return null; }
+}
+async function fetchFullBackup(index){
+  if(!index || !index.backupFileId) return null;
+  try{
+    const info = await tgCall('getFile', { file_id: index.backupFileId });
+    if(!info.ok) return null;
+    const url = `https://api.telegram.org/file/bot${TG_BOT_TOKEN}/${info.result.file_path}`;
+    const res = await fetch(url);
+    return await res.json();
+  }catch(e){ return null; }
+}
+function mergeRestoredData(full){
+  if(!full) return false;
+  let changed = false;
+  (full.sessions||[]).forEach(s=>{
+    const incomingMsgs = (full.messagesBySession && full.messagesBySession[s.id]) || [];
+    const existing = state.sessions.find(x=>x.id===s.id);
+    if(!existing){
+      state.sessions.push(s);
+      state.messagesBySession[s.id] = incomingMsgs;
+      changed = true;
+    } else {
+      const localMsgs = state.messagesBySession[s.id] || [];
+      if(incomingMsgs.length > localMsgs.length){
+        state.messagesBySession[s.id] = incomingMsgs;
+        existing.updatedAt = Math.max(existing.updatedAt||0, s.updatedAt||0);
+        changed = true;
+      }
+    }
+  });
+  state.sessions.sort((a,b)=>b.updatedAt-a.updatedAt);
+  (full.memories||[]).forEach(m=>{
+    const dup = state.memories.some(x=>x.title.toLowerCase()===String(m.title).toLowerCase());
+    if(!dup){ state.memories.push(m); changed = true; }
+  });
+  if(full.instructions && !state.instructions){
+    state.instructions = full.instructions;
+    const box = document.getElementById('instrInput');
+    if(box) box.value = full.instructions;
+    changed = true;
+  }
+  if(!state.currentSessionId && state.sessions.length){ state.currentSessionId = state.sessions[0].id; }
+  if(changed) persist();
+  return changed;
+}
+async function restoreFromTelegram(){
+  const index = await fetchPinnedFromTelegram();
+  if(!index) return false;
+  const full = await fetchFullBackup(index);
+  return mergeRestoredData(full || index);
+}
+function setTgStatus(mode){
+  const dot = document.getElementById('tgStatusDot');
+  const text = document.getElementById('tgStatusText');
+  const sub = document.getElementById('tgStatusSub');
+  if(!dot) return;
+  if(mode==='syncing'){ dot.classList.remove('off'); text.classList.remove('off'); text.textContent='Telegram auto-saving'; sub.textContent='Syncing…'; }
+  else if(mode==='synced'){ dot.classList.remove('off'); text.classList.remove('off'); text.textContent='Telegram auto-saving'; sub.textContent='Active • Synced just now'; }
+  else if(mode==='restoring'){ dot.classList.remove('off'); text.classList.remove('off'); text.textContent='Telegram auto-saving'; sub.textContent='Restoring your data…'; }
+  else if(mode==='error'){ dot.classList.add('off'); text.classList.add('off'); text.textContent='Telegram sync'; sub.textContent='Offline / error'; }
+}
+
+/* =========================================================================
+   Sessions
+   ========================================================================= */
+function uid(){ return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function createSession(){
+  const s = { id: uid(), title:'New Chat', createdAt:Date.now(), updatedAt:Date.now() };
+  state.sessions.unshift(s);
+  state.messagesBySession[s.id] = [];
+  state.currentSessionId = s.id;
+  persist(); renderSessions(); renderChat(); closeDrawer();
+  scheduleSync();
+}
+function currentMessages(){
+  if(!state.currentSessionId) return [];
+  return state.messagesBySession[state.currentSessionId] || [];
+}
+function touchSession(id, titleFromText){
+  const s = state.sessions.find(x=>x.id===id);
+  if(!s) return;
+  s.updatedAt = Date.now();
+  if(titleFromText && (s.title==='New Chat' || !s.title)){
+    s.title = titleFromText.slice(0,42) + (titleFromText.length>42?'…':'');
+  }
+  state.sessions.sort((a,b)=>b.updatedAt-a.updatedAt);
+  persist();
+}
+function timeAgo(ts){
+  const diff = Date.now()-ts;
+  const m = Math.floor(diff/60000);
+  if(m < 1) return 'Now';
+  if(m < 60) return m+'m ago';
+  const h = Math.floor(m/60);
+  if(h < 24) return h===1?'1h ago':h+'h ago';
+  const d = Math.floor(h/24);
+  if(d===1) return 'Yesterday';
+  if(d < 7) return d+' days ago';
+  return new Date(ts).toLocaleDateString();
+}
+function renderSessions(){
+  const list = document.getElementById('sessionList');
+  list.innerHTML = '';
+  if(state.sessions.length===0){
+    list.innerHTML = '<div class="empty-hint">No sessions yet — start a new chat.</div>';
+    return;
+  }
+  state.sessions.forEach(s=>{
+    const count = (state.messagesBySession[s.id]||[]).length;
+    const div = document.createElement('div');
+    div.className = 'session-item' + (s.id===state.currentSessionId ? ' active':'');
+    div.innerHTML = `<button class="sdelete" data-id="${s.id}">✕</button>
+      <div class="stitle">${escapeHtml(s.title||'New Chat')}</div>
+      <div class="smeta">${timeAgo(s.updatedAt)} • ${count} message${count===1?'':'s'}</div>`;
+    div.addEventListener('click', (e)=>{
+      if(e.target.closest('.sdelete')){ e.stopPropagation(); deleteSession(s.id); return; }
+      state.currentSessionId = s.id;
+      persist(); renderSessions(); renderChat(); closeDrawer();
+    });
+    list.appendChild(div);
+  });
+}
+function deleteSession(id){
+  state.sessions = state.sessions.filter(s=>s.id!==id);
+  delete state.messagesBySession[id];
+  if(state.currentSessionId===id){ state.currentSessionId = state.sessions[0] ? state.sessions[0].id : null; }
+  persist(); renderSessions(); renderChat(); scheduleSync();
+}
+
+/* =========================================================================
+   Chat rendering + sending
+   ========================================================================= */
+function renderChat(){
+  const scroll = document.getElementById('chatScroll');
+  scroll.innerHTML = '';
+  const sub = document.getElementById('sessionSub');
+  const msgs = currentMessages();
+  const session = state.sessions.find(s=>s.id===state.currentSessionId);
+  sub.textContent = session ? session.title : 'New chat';
+
+  msgs.forEach(m=>{
+    if(m.role==='user'){
+      scroll.appendChild(buildUserBubble(m.content, m.ts));
+    } else {
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+      buildAiMessageDOM(row, m);
+      scroll.appendChild(row);
+    }
+  });
+  scroll.scrollTop = scroll.scrollHeight;
+}
+function buildUserBubble(text, ts){
+  const row = document.createElement('div');
+  row.className = 'msg-row user';
+  row.innerHTML = `<div class="bubble-user">${escapeHtml(text)}</div><div class="msg-time">${new Date(ts||Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>`;
+  return row;
+}
+function autoresizeTextarea(el){ el.style.height='auto'; el.style.height = Math.min(el.scrollHeight,120)+'px'; }
+
+function buildPromptMessages(sid, webContextText){
   const sys = [
     `You are RiNi, an impressive, warm, and highly capable personal AI assistant. Two standing things ground every answer:\n` +
     `1. The current real date and time is: ${getLocalDateTime()}. Always use this instead of guessing or assuming your training cutoff is "now".\n` +
-    `2. A permanent memory of everything you and the user have ever discussed (durable facts are extracted and listed below, and every full conversation is logged permanently) — refer back to it naturally like a friend who never forgets, and keep learning from every new exchange.\n` +
+    `2. A permanent memory of everything the user has ever discussed with you, shared across every chat session they have (not just this one) — durable facts are listed below, and every full conversation is logged permanently. Refer back to it naturally like a friend who never forgets, and keep learning from every new exchange.\n` +
     `Format responses with markdown (bold, italics, tables, lists) and LaTeX ($...$ inline, $$...$$ display) for any math, since both render properly for the user. Be confident, precise, and personable — this is what makes you impressive to talk to.`
   ];
   if(state.instructions && state.instructions.trim()){
@@ -751,13 +801,13 @@ function buildPromptMessages(webContextText){
   }
   if(state.memories.length){
     const recent = state.memories.slice(-16).map(m=>`- ${m.title}: ${m.sub}`).join('\n');
-    sys.push(`Durable things you remember about the user from earlier conversations:\n${recent}`);
+    sys.push(`Durable things you remember about the user from earlier conversations (any session):\n${recent}`);
   }
   if(webContextText){
     sys.push(`Free web lookup already pulled for this message (Wikipedia/DuckDuckGo). Use it to answer accurately, in your own words, and mention it's from these sources when relevant:\n${webContextText}`);
   }
   const messages = [{ role:'system', content: sys.join('\n\n') }];
-  state.messages.slice(-20).forEach(m => messages.push({ role:m.role, content:m.content }));
+  (state.messagesBySession[sid]||[]).slice(-20).forEach(m => messages.push({ role:m.role, content:m.content }));
   return messages;
 }
 
@@ -766,11 +816,15 @@ async function sendMessage(){
   const text = input.value.trim();
   if(!text) return;
 
+  if(!state.currentSessionId){ createSession(); }
+  const sid = state.currentSessionId;
+
   Sound.send();
   input.value=''; autoresizeTextarea(input);
   document.getElementById('sendBtn').disabled = true;
 
-  state.messages.push({role:'user', content:text, ts:Date.now()});
+  state.messagesBySession[sid].push({role:'user', content:text, ts:Date.now()});
+  touchSession(sid, text);
   persist();
 
   const scroll = document.getElementById('chatScroll');
@@ -796,24 +850,30 @@ async function sendMessage(){
       aiBlock.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
     }
 
-    const messages = buildPromptMessages(webContext.contextText);
+    const messages = buildPromptMessages(sid, webContext.contextText);
     let full = '';
-
-    // No paid model, no billed tool calls — plain Puter default chat, free
-    // and unlimited for every user regardless of their Puter account.
-    const chatOptions = { stream:true };
+    const chatOptions = { stream:true }; // free default Puter model — no billed tool calls
 
     const resp = await puter.ai.chat(messages, chatOptions);
     if(resp && typeof resp[Symbol.asyncIterator] === 'function'){
       aiBlock.innerHTML = '<span class="live-text"></span><span class="ai-cursor"></span>';
-      const liveText = aiBlock.querySelector('.live-text');
-      let first = true;
+      let lastRender = 0;
       for await (const part of resp){
         const chunk = (part && part.text) ? part.text : '';
         if(!chunk) continue;
-        if(first){ Sound.receive(); first=false; }
+        if(full === ''){ Sound.receive(); }
         full += chunk;
-        liveText.textContent = full;
+
+        // Re-render the accumulated markdown periodically while streaming
+        // (not just at the very end) so long replies stay readable —
+        // formatted, word-wrapped text as it grows, not a raw blob that
+        // suddenly reformats when the stream finishes.
+        const now = Date.now();
+        if(now - lastRender > 140){
+          renderAiContent(aiBlock, full);
+          aiBlock.insertAdjacentHTML('beforeend', '<span class="ai-cursor"></span>');
+          lastRender = now;
+        }
         scroll.scrollTop = scroll.scrollHeight;
       }
     } else {
@@ -829,10 +889,13 @@ async function sendMessage(){
     buildAiMessageDOM(aiRow, aiMsg);
     scroll.scrollTop = scroll.scrollHeight;
 
-    state.messages.push(aiMsg);
+    state.messagesBySession[sid].push(aiMsg);
+    touchSession(sid);
     persist();
+    renderSessions();
 
-    logExchangeToTelegram(text, full);
+    const session = state.sessions.find(s=>s.id===sid);
+    logExchangeToTelegram(session ? session.title : 'RiNi Chat', text, full);
     extractMemories(text, full);
     scheduleSync();
   }catch(err){
@@ -854,9 +917,24 @@ async function typeReveal(el, text){
   liveText.textContent = text;
 }
 
+/* ---------- Clear chat (current session only; permanent Telegram log stays) ---------- */
+function clearCurrentChat(){
+  const sid = state.currentSessionId;
+  if(!sid || !currentMessages().length) return;
+  if(!confirm('Clear this chat? This wipes the messages shown here — RiNi\'s memories and the permanent Telegram log are not affected.')) return;
+  Sound.clear();
+  state.messagesBySession[sid] = [];
+  const s = state.sessions.find(x=>x.id===sid);
+  if(s) s.title = 'New Chat';
+  persist();
+  renderChat();
+  renderSessions();
+  scheduleSync(); // so the cloud backup reflects the clear too
+}
+document.getElementById('clearChatBtn').addEventListener('click', clearCurrentChat);
+
 /* =========================================================================
-   Memory extraction — background call that pulls durable facts out of every
-   exchange so RiNi keeps improving what it knows about the user over time.
+   Memory extraction — background call, GLOBAL across sessions
    ========================================================================= */
 async function extractMemories(userText, aiText){
   try{
@@ -875,14 +953,13 @@ async function extractMemories(userText, aiText){
     });
     persist();
     renderMemories();
-  }catch(e){ /* best-effort — never block chat on this */ }
+  }catch(e){ /* best-effort */ }
 }
 
 /* =========================================================================
    Memories panel
    ========================================================================= */
 function renderMemories(){
-  const weekAgo = Date.now() - 7*24*60*60*1000;
   document.getElementById('memCountTitle').textContent = `AI remembered ${state.memories.length} ${state.memories.length===1?'memory':'memories'}`;
   document.getElementById('memIndexedCount').textContent = state.memories.length;
 
@@ -900,7 +977,6 @@ function renderMemories(){
     tl.appendChild(div);
   });
 }
-
 document.getElementById('tgRetrieveBtn').addEventListener('click', async ()=>{
   const icon = document.querySelector('#tgRetrieveBtn .refresh-icon');
   const label = document.getElementById('tgRetrieveLabel');
@@ -912,8 +988,7 @@ document.getElementById('tgRetrieveBtn').addEventListener('click', async ()=>{
     if(index){
       const full = await fetchFullBackup(index);
       mergeRestoredData(full || index);
-      renderMemories();
-      renderChat();
+      renderMemories(); renderSessions(); renderChat();
       label.textContent = full ? 'Restored everything ✓' : 'Synced from Telegram ✓';
       setTgStatus('synced');
     } else {
@@ -1006,8 +1081,7 @@ document.getElementById('themeSeg').addEventListener('click', (e)=>{
 });
 
 /* =========================================================================
-   Bottom navigation (shared across all three panels) — no drawer, no
-   session list, just Chat / Memories / Settings.
+   Bottom navigation
    ========================================================================= */
 const NAV_ITEMS = [
   { id:'chat', label:'Chat', icon:`<path d="M21 11.5a8.5 8.5 0 01-8.5 8.5c-1.2 0-2.35-.26-3.38-.73L3 21l1.9-5.02A8.46 8.46 0 013 11.5 8.5 8.5 0 0111.5 3 8.5 8.5 0 0121 11.5z" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linejoin="round"/>` },
@@ -1039,6 +1113,16 @@ function switchTab(tab){
 ['bottomnavChat','bottomnav1','bottomnav2'].forEach(id=>buildNav(document.getElementById(id)));
 
 /* =========================================================================
+   Drawer controls
+   ========================================================================= */
+function openDrawer(){ Sound.open(); document.getElementById('drawer').classList.add('show'); document.getElementById('drawerOverlay').classList.add('show'); }
+function closeDrawer(){ document.getElementById('drawer').classList.remove('show'); document.getElementById('drawerOverlay').classList.remove('show'); }
+document.getElementById('hamburgerBtn').addEventListener('click', openDrawer);
+document.getElementById('drawerCloseBtn').addEventListener('click', closeDrawer);
+document.getElementById('drawerOverlay').addEventListener('click', closeDrawer);
+document.getElementById('newChatBtn').addEventListener('click', ()=>{ Sound.toggle(); createSession(); });
+
+/* =========================================================================
    Composer wiring
    ========================================================================= */
 const chatInput = document.getElementById('chatInput');
@@ -1053,33 +1137,37 @@ document.getElementById('sendBtn').addEventListener('click', sendMessage);
    ========================================================================= */
 async function boot(){
   document.body.setAttribute('data-theme', state.theme);
-  document.querySelectorAll('#themeSeg button').forEach(b=>{
-    b.classList.toggle('active', b.dataset.theme===state.theme);
-  });
+  document.querySelectorAll('#themeSeg button').forEach(b=>{ b.classList.toggle('active', b.dataset.theme===state.theme); });
   document.querySelector('meta[name="theme-color"]').setAttribute('content', state.theme==='dark' ? '#0b0b12' : '#f4f4f8');
 
-  const freshInstall = state.messages.length === 0 && state.memories.length === 0;
+  const freshInstall = state.sessions.length === 0 && state.memories.length === 0;
 
+  if(!state.currentSessionId || !state.sessions.find(s=>s.id===state.currentSessionId)){
+    if(state.sessions.length){ state.currentSessionId = state.sessions[0].id; }
+  }
+  renderSessions();
   renderChat();
   renderMemories();
   setTgStatus('synced');
 
   refreshPuterAuthUI();
 
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
-  }
+  if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 
-  // Nothing stored locally yet (fresh install, reinstall, cleared site
-  // data, or a brand-new device) — pull everything back from the Telegram
-  // cloud backup automatically, no button tap required.
   if(freshInstall){
     setTgStatus('restoring');
+    document.getElementById('sessionSub').textContent = 'Restoring from Telegram…';
     try{
       const changed = await restoreFromTelegram();
-      if(changed){ renderChat(); renderMemories(); }
+      if(changed){
+        if(!state.currentSessionId && state.sessions.length){ state.currentSessionId = state.sessions[0].id; }
+        renderSessions(); renderChat(); renderMemories();
+      }
     }catch(e){ /* no cloud data yet, or offline — just start fresh */ }
     setTgStatus('synced');
+    document.getElementById('sessionSub').textContent = state.sessions.length
+      ? ((state.sessions.find(s=>s.id===state.currentSessionId)||{}).title || 'New chat')
+      : 'New chat';
   }
 }
 boot();
