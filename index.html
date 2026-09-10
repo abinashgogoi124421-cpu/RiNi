@@ -430,8 +430,32 @@ const Sound = {
    Markdown / LaTeX / code rendering
    ========================================================================= */
 marked.setOptions({ breaks:true, gfm:true });
+
+// Pull whole math spans out as opaque tokens *before* markdown parsing, so
+// nothing inside them — backslash delimiters, underscores, asterisks —
+// can be misread as markdown escapes/emphasis, then paste the exact
+// original text back in after marked.parse() so KaTeX's auto-render sees
+// it untouched.
+function extractMathSpans(text){
+  const spans = [];
+  const stash = (m)=>{ const token = `@@MATH${spans.length}@@`; spans.push(m); return token; };
+  let out = text;
+  out = out.replace(/\$\$[\s\S]+?\$\$/g, stash);
+  out = out.replace(/\\\[[\s\S]+?\\\]/g, stash);
+  out = out.replace(/\\\([\s\S]+?\\\)/g, stash);
+  out = out.replace(/\$[^\n$]+?\$/g, stash);
+  return { text: out, spans };
+}
+function restoreMathSpans(html, spans){
+  spans.forEach((original, i)=>{ html = html.split(`@@MATH${i}@@`).join(original); });
+  return html;
+}
+
 function renderAiContent(el, raw){
-  el.innerHTML = marked.parse(raw || '');
+  const { text: protectedText, spans } = extractMathSpans(raw || '');
+  let html = marked.parse(protectedText);
+  html = restoreMathSpans(html, spans);
+  el.innerHTML = html;
   el.querySelectorAll('pre code').forEach(b => { try{ hljs.highlightElement(b); }catch(e){} });
   try{
     renderMathInElement(el, {
@@ -794,7 +818,7 @@ function buildPromptMessages(sid, webContextText){
     `You are RiNi, an impressive, warm, and highly capable personal AI assistant. Two standing things ground every answer:\n` +
     `1. The current real date and time is: ${getLocalDateTime()}. Always use this instead of guessing or assuming your training cutoff is "now".\n` +
     `2. A permanent memory of everything the user has ever discussed with you, shared across every chat session they have (not just this one) — durable facts are listed below, and every full conversation is logged permanently. Refer back to it naturally like a friend who never forgets, and keep learning from every new exchange.\n` +
-    `Format responses with markdown (bold, italics, tables, lists) and LaTeX ($...$ inline, $$...$$ display) for any math, since both render properly for the user. Be confident, precise, and personable — this is what makes you impressive to talk to.`
+    `Format responses with markdown (bold, italics, tables, lists). For any math, use LaTeX with these EXACT delimiters — inline math wrapped in single dollar signs like $x^2+1$, and standalone/display equations wrapped in double dollar signs on their own line like $$x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}$$. Never use bare square brackets or parentheses for math (e.g. never write [ x^2 ] or ( x^2 )) — only real LaTeX commands inside $ or $$ render correctly for the user. Be confident, precise, and personable — this is what makes you impressive to talk to.`
   ];
   if(state.instructions && state.instructions.trim()){
     sys.push(`The user's custom instructions for how you should talk to them: ${state.instructions.trim()}`);
