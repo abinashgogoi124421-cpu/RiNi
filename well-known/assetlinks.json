@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.abinashgogoi124421_cpu.twa",
+        "sha256_cert_fingerprints": ["93:7A:92:B6:A9:74:58:79:B3:0F:C2:D9:7E:A0:B5:53:6B:73:F8:3D:C0:DA:60:D4:C2:33:47:F8:37:71:1B:7E"]
+      }
+    }]
